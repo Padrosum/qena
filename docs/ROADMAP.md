@@ -1,41 +1,42 @@
 # Yol haritası
 
-## M0 — karar ve iskelet (şimdi)
+## M0 — karar ve iskelet
 
 - [x] Yeni proje adı ve kapsamı
 - [x] Mimari taslağı
 - [x] Kaynak ve lisans listesi
-- [ ] İlk veri paketi ve arama motoru kararı
-- [ ] Depo iskeletinin kurulması
+- [x] İlk veri paketi ve arama motoru kararı
+- [x] Depo iskeletinin kurulması
 
 ## M1 — çalışan çekirdek
 
 Amaç: `qena fetch` → `qena index` → `qena serve` zincirinin uçtan uca
 çalışması.
 
-- [ ] Cargo workspace, `qena.toml`, veri dizini
-- [ ] SQLite katalog ve belge modeli
-- [ ] Kaynak bildirimi ayrıştırıcı + `qena source list`
-- [ ] Vikipedi indirici (seçili başlıklar, HTML → metin)
-- [ ] Gutenberg indirici (Gutendex, EPUB/TXT)
-- [ ] Rehber paketi (10 özgün kontrol listesi)
-- [ ] Tantivy dizini + Türkçe analiz + artımlı indeksleme
-- [ ] axum: arama, belge okuyucu, durum sayfası
-- [ ] `qena doctor`, yapılandırılmış günlük, testler
-- [ ] Örnek veriyle uçtan uca deneme
+- [x] Cargo workspace, `qena.toml`, veri dizini
+- [x] SQLite katalog ve belge modeli
+- [x] Kaynak bildirimi ayrıştırıcı + `qena source list`
+- [x] Vikipedi indirici (seçili başlıklar, HTML → metin)
+- [x] Gutenberg indirici (doğrudan EPUB/TXT)
+- [x] Rehber paketi (10 özgün kontrol listesi)
+- [x] Tantivy dizini + Türkçe analiz + artımlı indeksleme
+- [x] axum: arama, belge okuyucu, durum sayfası
+- [x] `qena doctor`, yapılandırılmış günlük, testler
+- [x] Örnek veriyle uçtan uca deneme
 
 **Kabul:** ağ kapalıyken `qena serve` açılır; "deprem çantası", "istanbul",
 "kitap" sorguları sonuç verir; her sonuçta kaynak + lisans görünür.
 
 ## M2 — harita ve web kaydı
 
-- [ ] `pmtiles extract` ile bölge paketleri (Türkiye + komşular)
-- [ ] PMTiles okuma ve `/tiles/...` uç noktası
-- [ ] MapLibre + yerel font/stil; sokak, insani, fiziki/idari stiller
-- [ ] Natural Earth katmanları
-- [ ] `qena save` (monolith): tek dosya HTML + WARC
-- [ ] Web kuyruğu ve snapshot görüntüleyici
+- [x] `pmtiles extract` ile bölge paketleri (Türkiye z0-10)
+- [x] PMTiles okuma ve `/tiles/...` uç noktası
+- [x] MapLibre + yerel font/stil; sokak (açık/koyu), fiziki/idari
+- [x] Natural Earth katmanları
+- [x] `qena save` (monolith): tek dosya HTML
+- [x] Web kuyruğu ve snapshot görüntüleyici
 - [ ] systemd kullanıcı birimi
+- [ ] İnsani (HOT) stil ve daha yüksek zoom (z14) paketleri
 
 **Kabul:** internet kapalıyken harita kaydırılır/yakınlaşır; kaydedilmiş bir
 sayfa açılır; yeni URL kuyruğa girip işlenir.

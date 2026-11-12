@@ -1,0 +1,12 @@
+[source]
+id = "rehberler"
+category = "guides"
+title = "Qena rehberleri — kontrol listeleri"
+kind = "guide_pack"
+license = "CC-BY-SA-4.0"
+attribution = "Project Qena"
+enabled = false
+
+[source.params]
+dir = "guides"
+lang = "tr"

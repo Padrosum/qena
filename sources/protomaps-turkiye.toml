@@ -1,0 +1,14 @@
+[source]
+id = "protomaps-turkiye"
+category = "maps"
+title = "Türkiye — sokak haritası (PMTiles, z0-10)"
+kind = "protomaps_region"
+license = "ODbL-1.0"
+attribution = "© OpenStreetMap katkıcıları (ODbL) · Protomaps"
+enabled = false
+
+[source.params]
+region = "turkey"
+bbox = "25.5,35.8,44.8,42.2"
+maxzoom = 10
+build = "latest"

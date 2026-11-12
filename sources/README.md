@@ -40,5 +40,22 @@ format = "epub"
 | `natural_earth` | Kamu malı vektör katmanları |
 | `guide_pack` | Yerel Markdown rehberleri |
 | `url_list` | Satır satır URL listesi |
-| `web_save` | Tek URL kaydı (kuyruk) |
-| `zim` | Kiwix ZIM (ileride) |
+| `web_save` | Tek URL veya `urls` dizisi |
+
+## Web kaydı örneği
+
+```toml
+[source]
+id = "web-arsiv"
+category = "web"
+title = "Web kayıtları"
+kind = "url_list"
+license = "site-terms"
+attribution = "Kişisel arşiv"
+enabled = false
+
+[source.params]
+urls_file = "lists/web-urls.txt"
+```
+
+Kuyruktan işlemek için: `qena fetch --queue`.

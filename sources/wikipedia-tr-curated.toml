@@ -1,0 +1,13 @@
+[source]
+id = "wikipedia-tr-curated"
+category = "wikipedia"
+title = "Türkçe Vikipedi — seçili maddeler"
+kind = "wikipedia_api"
+license = "CC-BY-SA-4.0"
+attribution = "Vikipedi, özgür ansiklopedi"
+enabled = false
+
+[source.params]
+lang = "tr"
+titles_file = "lists/wikipedia-tr-essential.txt"
+with_images = false

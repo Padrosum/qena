@@ -1,0 +1,20 @@
+[package]
+name = "qena-index"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+qena-core = { path = "../qena-core" }
+anyhow.workspace = true
+epub.workspace = true
+html2text.workspace = true
+pdf-extract.workspace = true
+scraper.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tantivy.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

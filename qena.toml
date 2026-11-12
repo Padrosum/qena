@@ -1,0 +1,15 @@
+[general]
+data_dir = "data"
+host = "127.0.0.1"
+port = 8787
+user_agent = "Qena/0.1 (local offline archive)"
+
+[sources]
+dir = "sources"
+
+[fetch]
+delay_ms = 250
+timeout_secs = 30
+
+[search]
+limit = 20

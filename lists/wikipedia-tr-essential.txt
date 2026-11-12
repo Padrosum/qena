@@ -1,0 +1,88 @@
+# Türkçe Vikipedi — çekirdek liste
+# Her satır bir madde başlığı. # sonrası yorum. Boş satırlar atlanır.
+# Liste, çevrimdışı bir "hayatta kalma ansiklopedisi" omurgası olacak şekilde
+# kategorilere ayrıldı; zamanla genişletilecek.
+
+# Afet ve doğa olayları
+Deprem
+Tsunami
+Sel
+Heyelan
+Yangın
+Kuraklık
+
+# Su
+Su temizleme
+İçme suyu
+Su kuyusu
+
+# Gıda
+Gıda güvenliği
+Gıda kurutma
+Konserve
+
+# Sağlık ve ilk yardım
+İlk yardım
+Kalp masajı
+Kanama
+Yanık
+Dehidrasyon
+Hipotermi
+Enfeksiyon
+Antibiyotik
+
+# Barınma ve enerji
+Barınak
+Çadır
+Ateş
+Güneş enerjisi
+Pil
+Jeneratör
+
+# Yön bulma ve iletişim
+Harita
+Pusula
+Küresel Konumlama Sistemi
+Radyo
+Telsiz
+Amatör telsizcilik
+
+# Doğada
+Zehirlenme
+Yenilebilir mantar
+Mantar zehirleri
+Yılan ısırığı
+
+# Temel bilim ve tarım
+Su döngüsü
+İklim
+Hava durumu
+Toprak
+Tarım
+Kompost
+
+# Coğrafya — Anadolu
+Türkiye
+Anadolu
+İstanbul
+Ankara
+Şanlıurfa
+Fırat
+Dicle
+Van Gölü
+
+# Coğrafya — Orta Doğu ve Avrupa
+Orta Doğu
+Mezopotamya
+Avrupa
+Balkanlar
+Akdeniz
+Alpler
+Tuna
+
+# Kurumlar ve toplum
+Afet ve Acil Durum Yönetimi Başkanlığı
+Türk Kızılay
+Travma sonrası stres bozukluğu
+İnsan hakları
+Cenevre Sözleşmeleri

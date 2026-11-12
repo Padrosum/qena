@@ -110,41 +110,40 @@ yeniden kaydedilirse yeni bir `snapshots` satırı oluşur; eski sürüm silinme
   - `/raw/{id}` orijinal dosya (HTTP Range destekli)
   - `/library`, `/library/{id}` kitap rafı
   - `/guides`, `/guides/{slug}` kontrol listeleri
-  - `/maps`, `/tiles/{region}/{z}/{x}/{y}.mvt`
+  - `/maps`, `/tiles/{region}/{z}/{x}/{y}`
   - `/save` (GET form, POST kuyruk), `/status`
-- Güvenlik: yalnızca `127.0.0.1`; `Content-Security-Policy`; kaydedilmiş web
-  sayfaları sandbox'lı iframe içinde ve varsayılan olarak scriptsiz gösterilir;
-  path traversal koruması.
-- Statik dosyalar `include_dir!` ile ikiliye gömülür; harita/font gibi büyük
-  varlıklar `data/assets/` altında durur.
+- Güvenlik: yalnızca `127.0.0.1`; kaydedilmiş web sayfaları sandbox'lı
+  `Content-Security-Policy` ile sunulur; path traversal koruması.
+- Statik varlıklar (MapLibre, fontlar, stiller, Natural Earth) `assets/`
+  altındadır ve `/assets` üzerinden sunulur. Büyük veri `data/` altında kalır.
 
 ## 8. Haritalar
 
 - **Vektör karo**: Protomaps günlük derlemesinden `pmtiles extract` ile bölge
   bazlı `PMTiles` üretimi. Veri OpenStreetMap (ODbL), üretim Protomaps.
 - **Görüntüleme**: MapLibre GL JS (BSD) + yerel font glyph'leri. `qena-web`,
-  PMTiles dosyasını HTTP Range ile okur ve `/tiles/...` ZXY uç noktası sunar.
+  `pmtiles` Rust kütüphanesiyle PMTiles dosyasını okur ve `/tiles/...` ZXY uç
+  noktası sunar. Türkiye z0-10 paketi ~50 MB.
 - **Stiller**:
   - `Sokak (açık)` / `Sokak (koyu)`: OSM yolları, su, bina, etiketler.
-  - `İnsani`: yüksek kontrast, afet okunabilirliği.
   - `Fiziki / İdari`: Natural Earth (kamu malı) ülke sınırları, kıyılar,
     nehirler, göller, yerleşimler; sokak verisi gerektirmez.
+  - `İnsani`: yüksek kontrast (M3'te eklenecek).
 - **Bölgeler**: Türkiye, Kıbrıs, Suriye, Irak, İran, Lübnan, Ürdün,
   İsrail-Filistin, Yunanistan, Bulgaristan. Avrupa için seçili ülke/bbox.
 - **Atıf**: harita üzerinde "© OpenStreetMap katkıcıları (ODbL) · Protomaps ·
   Natural Earth" kalıcı olarak görünür.
-- `pmtiles` ikilisi derleme/indirme aracıdır; `qena doctor` varlığını denetler.
-  İleride yerel Rust çıkarımına geçilebilir.
+- `pmtiles` ikilisi indirme/çıkarım aracıdır; `qena doctor` varlığını denetler.
 
 ## 9. Web kaydetme
 
-- `qena save <url>`: monolith kütüphanesi (CC0) ile tek dosyalık HTML ve
-  isteğe bağlı WARC üretir.
-- Aynı URL'nin her kaydı zaman damgalı bir `snapshot` olur; eski sürüm korunur.
-- Kuyruk: web formundan gelen istekler `web_queue` tablosuna yazılır; ayrı bir
-  `qena fetch --queue` çalışması işler. Sunucu kendi başına dışarı çıkmaz.
-- Varsayılan: `robots.txt`'e saygı, alan adı başına gecikme, eşzamanlılık 1.
+- `qena save <url>`: monolith kütüphanesi (CC0/0BSD) ile tek dosyalık HTML
+  üretir; dosya `data/content/web/<host>/` altına zaman damgasıyla yazılır.
+- Web formu yalnızca `web_queue` tablosuna yazar; `qena fetch --queue` ayrı
+  çalışır ve kayıtları işler. Sunucu kendi başına dışarı çıkmaz.
+- Her kayıt ayrı bir belge kimliği alır; aynı URL'nin eski kayıtları korunur.
 - Görüntüleme: metin çıkarımı + sandbox'lı orijinal; indirme bağlantısı.
+- Varsayılan: alan adı başına gecikme; toplu kazıma yok. WARC çıktısı M3'te.
 
 ## 10. Kaynak bildirimleri
 
@@ -166,19 +165,21 @@ titles_file = "lists/wikipedia-tr-essential.txt"
 with_images = false
 ```
 
-`kind` değerleri: `wikipedia_api`, `wikisource_api`, `gutenberg`,
-`standard_ebooks`, `protomaps_region`, `natural_earth`, `guide_pack`, `url_list`,
-`web_save`, `zim` (ileride).
+`kind` değerleri: `wikipedia_api`, `gutenberg`, `protomaps_region`,
+`guide_pack`, `url_list`, `web_save`; `wikisource_api`, `standard_ebooks`,
+`natural_earth` ve `zim` ileride.
 
 Komutlar:
 
 ```bash
 qena source list
 qena fetch wikipedia-tr-curated --limit 50
-qena fetch --category maps --source osm-turkey
+qena fetch protomaps-turkiye
 qena index
 qena search "deprem çantası"
 qena serve
+qena save https://example.com
+qena fetch --queue
 ```
 
 ## 11. Lisans ve atıf

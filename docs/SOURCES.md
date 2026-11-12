@@ -19,7 +19,7 @@ Atıf: "Vikipedi, özgür ansiklopedi — CC BY-SA 4.0" + madde revizyon bağlan
 
 | Kaynak | Lisans | Yaklaşık boyut | Not |
 |---|---|---|---|
-| Project Gutenberg (Gutendex API) | Kamu malı (ABD) | 1–5 MB/kitap | EPUB/TXT; Türkçe eser az |
+| Project Gutenberg (doğrudan EPUB/TXT) | Kamu malı (ABD) | 1–5 MB/kitap | `gutenberg.org/ebooks/<id>.epub` |
 | Standard Ebooks (OPDS) | Kamu malı (ABD) | 2–8 MB/kitap | düzenli EPUB |
 | Vikikaynak (Wikisource API) | CC BY-SA 4.0 | değişken | Türkçe kamu malı metinler |
 | Yerel PDF/EPUB | kullanıcıya bağlı | değişken | `qena library add` ile |
@@ -57,6 +57,16 @@ ODbL atfı zorunludur. Sokak dışı katmanlar Natural Earth'ten gelir.
 |---|---|---|
 | Kullanıcının verdiği URL'ler | Sitenin kendi lisansı | Kişisel arşiv; `robots.txt`'e saygı, toplu kazıma yok |
 | URL listeleri | Kullanıcıya bağlı | Her URL için kaynak ve tarih kaydı |
+
+## Mevcut örnek (12 Kasım 2026)
+
+- 10 Vikipedi maddesi (deprem, tsunami, sel, su, gıda…)
+- 3 Gutenberg kitabı (Alice, Christmas Carol, Oz)
+- 10 Qena rehberi
+- 1 harita paketi: Türkiye z0-10, ~51 MB
+- 2 web kaydı (example.com, IANA example domains)
+
+Toplam veri dizini ~71 MB. Tam liste `qena status` ile görülür.
 
 ## Lisans uyumluluğu
 

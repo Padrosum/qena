@@ -37,8 +37,21 @@ arşiv.
 
 ## Durum
 
-Şu an **tasarım ve iskelet** aşamasında. Mimari `docs/ARCHITECTURE.md`,
-kaynak listesi `docs/SOURCES.md`, yol haritası `docs/ROADMAP.md` içinde.
+**M1 ve M2'nin çekirdeği çalışıyor** (12 Kasım 2026):
+
+- `qena init` → katalog + veri dizini
+- `qena fetch wikipedia-tr-curated` → Vikipedi HTML
+- `qena fetch gutenberg-secili` → Gutenberg EPUB/TXT
+- `qena fetch rehberler` → 10 kontrol listesi
+- `qena fetch protomaps-turkiye` → PMTiles sokak haritası
+- `qena index` → Tantivy + Türkçe analiz
+- `qena search "deprem çantası"` → sonuçlar
+- `qena serve` → `http://127.0.0.1:8787` arama, okuyucu, kitaplar, rehberler, harita
+- `qena save <url>` → monolith ile tek dosya web kaydı
+- `qena fetch --queue` → web formundan gelen kayıtları işleme
+
+Ayrıntılı mimari `docs/ARCHITECTURE.md`, kaynak listesi `docs/SOURCES.md`,
+yol haritası `docs/ROADMAP.md` içinde.
 
 ## Depo düzeni (hedef)
 

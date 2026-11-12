@@ -1,0 +1,12 @@
+[source]
+id = "gutenberg-secili"
+category = "books"
+title = "Gutenberg — seçili kamu malı kitaplar"
+kind = "gutenberg"
+license = "public-domain"
+attribution = "Project Gutenberg"
+enabled = false
+
+[source.params]
+ids_file = "lists/gutenberg-selected.txt"
+format = "epub"

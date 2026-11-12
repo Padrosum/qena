@@ -1,0 +1,42 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/qena-core",
+  "crates/qena-fetch",
+  "crates/qena-index",
+  "crates/qena-web",
+  "crates/qena-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+authors = ["Padros"]
+repository = "https://github.com/Padrosum/qena"
+
+[workspace.dependencies]
+anyhow = "1"
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "1"
+chrono = { version = "0.4", features = ["serde"] }
+rusqlite = { version = "0.42", features = ["bundled"] }
+sha2 = "0.11"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.13", default-features = false, features = ["rustls", "http2", "gzip", "brotli", "json", "query"] }
+tantivy = "0.27"
+scraper = "0.29"
+html2text = "0.17"
+epub = "2.1"
+pdf-extract = "0.12"
+axum = "0.8"
+maud = "0.27"
+pulldown-cmark = "0.13"
+clap = { version = "4", features = ["derive"] }
+url = "2"
+mime_guess = "2"
+monolith = { version = "2.12", default-features = false }

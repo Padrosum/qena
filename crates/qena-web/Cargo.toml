@@ -1,0 +1,21 @@
+[package]
+name = "qena-web"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+qena-core = { path = "../qena-core" }
+qena-index = { path = "../qena-index" }
+anyhow.workspace = true
+axum.workspace = true
+maud.workspace = true
+mime_guess.workspace = true
+pmtiles = "0.28"
+pulldown-cmark.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tantivy.workspace = true
+tokio.workspace = true
+tower-http = { version = "0.6", features = ["fs"] }
+tracing.workspace = true
