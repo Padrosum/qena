@@ -60,13 +60,14 @@ ODbL atfı zorunludur. Sokak dışı katmanlar Natural Earth'ten gelir.
 
 ## Mevcut örnek (12 Kasım 2026)
 
-- 10 Vikipedi maddesi (deprem, tsunami, sel, su, gıda…)
-- 3 Gutenberg kitabı (Alice, Christmas Carol, Oz)
+- 62 Vikipedi maddesi (deprem, tsunami, sel, su, gıda, coğrafya, kurumlar…)
+- 20 Gutenberg kitabı (Alice, Pride and Prejudice, Moby Dick, Dracula…)
 - 10 Qena rehberi
-- 1 harita paketi: Türkiye z0-10, ~51 MB
+- 3 harita paketi: Türkiye z0-10 (~51 MB), Orta Doğu z0-8 (~5 MB),
+  Balkanlar z0-8 (~7 MB)
 - 2 web kaydı (example.com, IANA example domains)
 
-Toplam veri dizini ~71 MB. Tam liste `qena status` ile görülür.
+Toplam veri dizini ~141 MB. Tam liste `qena status` ile görülür.
 
 ## Lisans uyumluluğu
 

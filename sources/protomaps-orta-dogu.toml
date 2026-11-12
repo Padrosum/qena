@@ -1,0 +1,14 @@
+[source]
+id = "protomaps-orta-dogu"
+category = "maps"
+title = "Orta Doğu — sokak haritası (PMTiles, z0-8)"
+kind = "protomaps_region"
+license = "ODbL-1.0"
+attribution = "© OpenStreetMap katkıcıları (ODbL) · Protomaps"
+enabled = false
+
+[source.params]
+region = "orta-dogu"
+bbox = "34.0,27.5,49.5,38.5"
+maxzoom = 8
+build = "latest"

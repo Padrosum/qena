@@ -28,7 +28,7 @@ impl Default for General {
             data_dir: PathBuf::from("data"),
             host: "127.0.0.1".to_string(),
             port: 8787,
-            user_agent: "Qena/0.1 (local offline archive)".to_string(),
+            user_agent: "Qena/0.1 (https://github.com/Padrosum/qena; offline archive)".to_string(),
         }
     }
 }

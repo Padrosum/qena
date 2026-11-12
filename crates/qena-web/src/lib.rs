@@ -43,6 +43,7 @@ pub async fn serve(cfg: Config, host: &str, port: u16) -> Result<()> {
         .route("/guides/{slug}", get(guide_page))
         .route("/maps", get(maps_page))
         .route("/maps/{region}/tilejson.json", get(tilejson))
+        .route("/styles/{region}/{theme}", get(style_json))
         .route("/tiles/{region}/{z}/{x}/{y}", get(tile))
         .route("/save", get(save_page).post(save_submit))
         .route("/status", get(status_page))
@@ -69,6 +70,12 @@ struct SearchQuery {
     source: String,
     #[serde(default)]
     lang: String,
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct MapQuery {
+    #[serde(default)]
+    region: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -368,7 +375,10 @@ async fn guide_page(
     Ok(Html(page(&doc.title, "", body).into_string()))
 }
 
-async fn maps_page(State(state): State<AppState>) -> WebResult<Html<String>> {
+async fn maps_page(
+    State(state): State<AppState>,
+    Query(params): Query<MapQuery>,
+) -> WebResult<Html<String>> {
     let maps_dir = state.cfg.general.data_dir.join("maps");
     let mut regions = Vec::new();
     if let Ok(entries) = std::fs::read_dir(&maps_dir) {
@@ -384,12 +394,18 @@ async fn maps_page(State(state): State<AppState>) -> WebResult<Html<String>> {
         }
     }
     regions.sort();
-    let has_turkey = regions.iter().any(|region| region == "turkey");
-    let default_style = if has_turkey {
-        "/assets/styles/street-light.json"
-    } else {
-        "/assets/styles/physical.json"
-    };
+    let selected = params
+        .region
+        .filter(|region| regions.iter().any(|item| item == region))
+        .or_else(|| {
+            regions
+                .iter()
+                .find(|region| region.as_str() == "turkey")
+                .cloned()
+        })
+        .or_else(|| regions.first().cloned())
+        .unwrap_or_default();
+    let has_regions = !regions.is_empty();
 
     let body = html! {
         section class="search-head" {
@@ -399,7 +415,7 @@ async fn maps_page(State(state): State<AppState>) -> WebResult<Html<String>> {
                 "fiziki/idari katmanlar Natural Earth (kamu malı)."
             }
         }
-        @if !has_turkey {
+        @if !has_regions {
             div class="note" {
                 p {
                     "Sokak haritası henüz indirilmedi. "
@@ -411,9 +427,23 @@ async fn maps_page(State(state): State<AppState>) -> WebResult<Html<String>> {
         div class="map-wrap" {
             div id="map" {}
             div class="map-controls" {
-                button type="button" data-style="street-light" { "Sokak (açık)" }
-                button type="button" data-style="street-dark" { "Sokak (koyu)" }
-                button type="button" data-style="physical" { "Fiziki / İdari" }
+                @if has_regions {
+                    label class="map-region" {
+                        "Bölge "
+                        select id="region" {
+                            @for region in &regions {
+                                @if region == &selected {
+                                    option value=(region) selected { (region) }
+                                } @else {
+                                    option value=(region) { (region) }
+                                }
+                            }
+                        }
+                    }
+                }
+                button type="button" data-theme="street-light" { "Sokak (açık)" }
+                button type="button" data-theme="street-dark" { "Sokak (koyu)" }
+                button type="button" data-theme="physical" { "Fiziki / İdari" }
             }
         }
         section class="note" {
@@ -423,7 +453,10 @@ async fn maps_page(State(state): State<AppState>) -> WebResult<Html<String>> {
             } @else {
                 ul {
                     @for region in &regions {
-                        li { (region) " — " code { (format!("/tiles/{region}/{{z}}/{{x}}/{{y}}")) } }
+                        li {
+                            a href=(format!("/maps?region={region}")) { (region) }
+                            " — " code { (format!("/tiles/{region}/{{z}}/{{x}}/{{y}}")) }
+                        }
                     }
                 }
             }
@@ -433,9 +466,25 @@ async fn maps_page(State(state): State<AppState>) -> WebResult<Html<String>> {
         }
         link rel="stylesheet" href="/assets/maplibre/maplibre-gl.css";
         script src="/assets/maplibre/maplibre-gl.js" {}
-        script { (PreEscaped(format!("const QENA_MAP_STYLE = {default_style:?}; {MAP_JS}"))) }
+        script { (PreEscaped(format!("const QENA_MAP_REGION = {selected:?}; {MAP_JS}"))) }
     };
     Ok(Html(page("Haritalar", "", body).into_string()))
+}
+
+async fn style_json(
+    AxumPath((region, theme)): AxumPath<(String, String)>,
+) -> WebResult<Json<serde_json::Value>> {
+    if !["street-light", "street-dark"].contains(&theme.as_str()) {
+        return Err(AppError(anyhow::anyhow!("bilinmeyen stil: {theme}")));
+    }
+    let path = std::path::PathBuf::from("assets/styles").join(format!("{theme}.json"));
+    let text = tokio::fs::read_to_string(&path)
+        .await
+        .with_context(|| format!("{} okunamadı", path.display()))?;
+    let mut value: serde_json::Value = serde_json::from_str(&text)?;
+    value["sources"]["protomaps"]["url"] =
+        serde_json::json!(format!("/maps/{region}/tilejson.json"));
+    Ok(Json(value))
 }
 
 async fn tilejson(
@@ -732,9 +781,13 @@ where
 type WebResult<T> = Result<T, AppError>;
 
 const MAP_JS: &str = r#"
+const state = { region: QENA_MAP_REGION, theme: 'street-light' };
+const styleUrl = () => state.theme === 'physical'
+  ? '/assets/styles/physical.json'
+  : '/styles/' + state.region + '/' + state.theme;
 const map = new maplibregl.Map({
   container: 'map',
-  style: QENA_MAP_STYLE,
+  style: styleUrl(),
   center: [35.5, 39.0],
   zoom: 5,
   attributionControl: false
@@ -744,9 +797,17 @@ map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 map.addControl(new maplibregl.AttributionControl({
   customAttribution: '© OpenStreetMap katkıcıları (ODbL) · Protomaps · Natural Earth'
 }), 'bottom-right');
-document.querySelectorAll('[data-style]').forEach((button) => {
+const regionSelect = document.getElementById('region');
+if (regionSelect) {
+  regionSelect.addEventListener('change', () => {
+    state.region = regionSelect.value;
+    if (state.theme !== 'physical') map.setStyle(styleUrl());
+  });
+}
+document.querySelectorAll('[data-theme]').forEach((button) => {
   button.addEventListener('click', () => {
-    map.setStyle('/assets/styles/' + button.dataset.style + '.json');
+    state.theme = button.dataset.theme;
+    map.setStyle(styleUrl());
   });
 });
 "#;
@@ -910,6 +971,15 @@ footer p { margin: .2rem 0; }
   cursor: pointer;
 }
 .map-controls button:hover { border-color: var(--accent); color: var(--accent); }
+.map-region { display: flex; align-items: center; gap: .4rem; font-size: .9rem; }
+.map-region select {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--card);
+  color: var(--fg);
+  padding: .4rem .6rem;
+  font: inherit;
+}
 @media print {
   .top, footer, .actions { display: none; }
   body { background: #fff; color: #000; }

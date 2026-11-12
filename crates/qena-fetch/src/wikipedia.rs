@@ -67,29 +67,59 @@ pub async fn fetch(
     let wiki_dir = cfg.wiki_dir(lang);
     std::fs::create_dir_all(&wiki_dir)?;
     summary.skipped = 0;
+    let delay_ms = source
+        .param_usize("delay_ms")
+        .and_then(|value| u64::try_from(value).ok())
+        .unwrap_or(1000)
+        .max(250);
 
     for title in titles {
-        let response = client
-            .get(&api)
-            .query(&[
-                ("action", "parse"),
-                ("page", title.as_str()),
-                ("prop", "text|revid|displaytitle"),
-                ("format", "json"),
-                ("formatversion", "2"),
-                ("redirects", "1"),
-            ])
-            .send()
-            .await;
-
-        let response = match response {
-            Ok(response) => response,
-            Err(error) => {
-                warn!(source = %source.id, title = %title, error = %error, "istek başarısız");
-                summary.failed += 1;
-                tokio::time::sleep(std::time::Duration::from_millis(cfg.fetch.delay_ms)).await;
-                continue;
+        let mut response = None;
+        for attempt in 0..4u64 {
+            match client
+                .get(&api)
+                .query(&[
+                    ("action", "parse"),
+                    ("page", title.as_str()),
+                    ("prop", "text|revid|displaytitle"),
+                    ("format", "json"),
+                    ("formatversion", "2"),
+                    ("redirects", "1"),
+                ])
+                .send()
+                .await
+            {
+                Ok(result) if result.status() == reqwest::StatusCode::TOO_MANY_REQUESTS => {
+                    let wait = result
+                        .headers()
+                        .get(reqwest::header::RETRY_AFTER)
+                        .and_then(|value| value.to_str().ok())
+                        .and_then(|value| value.parse::<u64>().ok())
+                        .unwrap_or(5);
+                    warn!(
+                        source = %source.id,
+                        title = %title,
+                        wait_secs = wait,
+                        attempt = attempt + 1,
+                        "Vikipedi hız sınırı; bekleniyor"
+                    );
+                    tokio::time::sleep(std::time::Duration::from_secs(wait + attempt * 2)).await;
+                }
+                Ok(result) => {
+                    response = Some(result);
+                    break;
+                }
+                Err(error) => {
+                    warn!(source = %source.id, title = %title, error = %error, "istek başarısız");
+                    break;
+                }
             }
+        }
+
+        let Some(response) = response else {
+            summary.failed += 1;
+            tokio::time::sleep(std::time::Duration::from_millis(delay_ms)).await;
+            continue;
         };
 
         let status = response.status();
@@ -97,7 +127,7 @@ pub async fn fetch(
         if !status.is_success() {
             warn!(source = %source.id, title = %title, status = %status, "HTTP hatası");
             summary.failed += 1;
-            tokio::time::sleep(std::time::Duration::from_millis(cfg.fetch.delay_ms)).await;
+            tokio::time::sleep(std::time::Duration::from_millis(delay_ms)).await;
             continue;
         }
 
@@ -106,7 +136,7 @@ pub async fn fetch(
             Err(error) => {
                 warn!(source = %source.id, title = %title, error = %error, "JSON çözülemedi");
                 summary.failed += 1;
-                tokio::time::sleep(std::time::Duration::from_millis(cfg.fetch.delay_ms)).await;
+                tokio::time::sleep(std::time::Duration::from_millis(delay_ms)).await;
                 continue;
             }
         };
@@ -166,7 +196,7 @@ pub async fn fetch(
         summary.bytes += html.len() as u64;
         info!(source = %source.id, title = %parse.title, "indirildi");
 
-        tokio::time::sleep(std::time::Duration::from_millis(cfg.fetch.delay_ms)).await;
+        tokio::time::sleep(std::time::Duration::from_millis(delay_ms)).await;
     }
 
     Ok(summary)

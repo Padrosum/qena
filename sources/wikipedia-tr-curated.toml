@@ -11,3 +11,4 @@ enabled = false
 lang = "tr"
 titles_file = "lists/wikipedia-tr-essential.txt"
 with_images = false
+delay_ms = 1000

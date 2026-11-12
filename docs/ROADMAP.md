@@ -29,9 +29,11 @@ Amaç: `qena fetch` → `qena index` → `qena serve` zincirinin uçtan uca
 
 ## M2 — harita ve web kaydı
 
-- [x] `pmtiles extract` ile bölge paketleri (Türkiye z0-10)
+- [x] `pmtiles extract` ile bölge paketleri (Türkiye z0-10, Orta Doğu ve
+      Balkanlar z0-8)
 - [x] PMTiles okuma ve `/tiles/...` uç noktası
 - [x] MapLibre + yerel font/stil; sokak (açık/koyu), fiziki/idari
+- [x] Bölge seçici ve bölgeye göre dinamik stil
 - [x] Natural Earth katmanları
 - [x] `qena save` (monolith): tek dosya HTML
 - [x] Web kuyruğu ve snapshot görüntüleyici

@@ -1,0 +1,14 @@
+[source]
+id = "protomaps-balkanlar"
+category = "maps"
+title = "Balkanlar — sokak haritası (PMTiles, z0-8)"
+kind = "protomaps_region"
+license = "ODbL-1.0"
+attribution = "© OpenStreetMap katkıcıları (ODbL) · Protomaps"
+enabled = false
+
+[source.params]
+region = "balkanlar"
+bbox = "19.0,34.5,29.5,42.5"
+maxzoom = 8
+build = "latest"
