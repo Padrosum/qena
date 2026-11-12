@@ -1,0 +1,22 @@
+# Derleme ve araç çıktıları
+/target/
+**/*.rs.bk
+
+# İndirilen veri ve dizin (git'e girmez)
+/data/
+*.pmtiles
+*.mbtiles
+*.osm.pbf
+*.zim
+*.warc
+*.warc.gz
+
+# Yerel yapılandırma ve günlükler
+/qena.local.toml
+*.log
+
+# Editör / işletim sistemi
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
