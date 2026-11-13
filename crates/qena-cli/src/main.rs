@@ -397,6 +397,7 @@ fn doctor(cfg: &Config) -> Result<()> {
     println!("Qena doktor");
     println!("Veri dizini: {}", cfg.general.data_dir.display());
     check(cfg.general.data_dir.exists(), "veri dizini");
+    check(cfg.general.assets_dir.exists(), "varlık dizini (assets)");
     check(cfg.catalog_path().exists(), "katalog");
     check(cfg.index_dir().join("meta.json").exists(), "Tantivy dizini");
     let sources = Source::load_all(&cfg.sources.dir)?;

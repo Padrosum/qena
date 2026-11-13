@@ -17,6 +17,7 @@ pub struct Config {
 #[serde(default)]
 pub struct General {
     pub data_dir: PathBuf,
+    pub assets_dir: PathBuf,
     pub host: String,
     pub port: u16,
     pub user_agent: String,
@@ -26,6 +27,7 @@ impl Default for General {
     fn default() -> Self {
         Self {
             data_dir: PathBuf::from("data"),
+            assets_dir: PathBuf::from("assets"),
             host: "127.0.0.1".to_string(),
             port: 8787,
             user_agent: "Qena/0.1 (https://github.com/Padrosum/qena; offline archive)".to_string(),
@@ -100,6 +102,9 @@ impl Config {
         if self.general.data_dir.is_relative() {
             self.general.data_dir = base.join(&self.general.data_dir);
         }
+        if self.general.assets_dir.is_relative() {
+            self.general.assets_dir = base.join(&self.general.assets_dir);
+        }
         if self.sources.dir.is_relative() {
             self.sources.dir = base.join(&self.sources.dir);
         }
@@ -129,7 +134,7 @@ impl Config {
             base.join("index"),
             base.join("licenses"),
             base.join("maps"),
-            base.join("assets"),
+            self.general.assets_dir.clone(),
         ] {
             fs::create_dir_all(&dir)
                 .with_context(|| format!("{} oluşturulamadı", dir.display()))?;

@@ -50,6 +50,7 @@ pub fn export(cfg: &Config, output: &Path, force: bool, with_binary: bool) -> Re
 
     let mut portable = cfg.clone();
     portable.general.data_dir = PathBuf::from("data");
+    portable.general.assets_dir = PathBuf::from("assets");
     portable.sources.dir = PathBuf::from("sources");
     fs::write(
         staging.join("qena.toml"),

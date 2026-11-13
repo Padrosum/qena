@@ -7,7 +7,7 @@ use anyhow::{Context, Result, bail};
 use axum::Router;
 use axum::body::Body;
 use axum::extract::{Form, Path as AxumPath, Query, State};
-use axum::http::{HeaderValue, StatusCode, header};
+use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{Html, IntoResponse, Json, Redirect, Response};
 use axum::routing::get;
 use maud::{DOCTYPE, Markup, PreEscaped, html};
@@ -27,6 +27,7 @@ struct AppState {
 
 pub async fn serve(cfg: Config, host: &str, port: u16) -> Result<()> {
     let index = open_index(&cfg.index_dir(), false)?;
+    let assets_dir = cfg.general.assets_dir.clone();
     let state = AppState {
         cfg: Arc::new(cfg),
         index: Arc::new(index),
@@ -47,7 +48,7 @@ pub async fn serve(cfg: Config, host: &str, port: u16) -> Result<()> {
         .route("/tiles/{region}/{z}/{x}/{y}", get(tile))
         .route("/save", get(save_page).post(save_submit))
         .route("/status", get(status_page))
-        .nest_service("/assets", ServeDir::new("assets"))
+        .nest_service("/assets", ServeDir::new(assets_dir))
         .fallback(not_found)
         .with_state(state);
 
@@ -521,6 +522,7 @@ async fn maps_page(
         }
         div class="map-wrap" {
             div id="map" {}
+            div id="map-status" class="map-status" { "Harita yükleniyor…" }
             div class="map-controls" {
                 @if has_regions {
                     label class="map-region" {
@@ -568,25 +570,96 @@ async fn maps_page(
 }
 
 async fn style_json(
+    State(state): State<AppState>,
     AxumPath((region, theme)): AxumPath<(String, String)>,
+    headers: HeaderMap,
 ) -> WebResult<Json<serde_json::Value>> {
-    if !["street-light", "street-dark", "humanitarian"].contains(&theme.as_str()) {
+    if !["street-light", "street-dark", "humanitarian", "physical"].contains(&theme.as_str()) {
         return Err(AppError(anyhow::anyhow!("bilinmeyen stil: {theme}")));
     }
-    let path = std::path::PathBuf::from("assets/styles").join(format!("{theme}.json"));
+    let base = public_base(&headers);
+    let path = state
+        .cfg
+        .general
+        .assets_dir
+        .join("styles")
+        .join(format!("{theme}.json"));
     let text = tokio::fs::read_to_string(&path)
         .await
         .with_context(|| format!("{} okunamadı", path.display()))?;
     let mut value: serde_json::Value = serde_json::from_str(&text)?;
-    value["sources"]["protomaps"]["url"] =
-        serde_json::json!(format!("/maps/{region}/tilejson.json"));
+    value["glyphs"] = serde_json::json!(format!("{base}/assets/fonts/{{fontstack}}/{{range}}.pbf"));
+    if let Some(sprite) = value
+        .get("sprite")
+        .and_then(|sprite| sprite.as_str())
+        .map(str::to_string)
+        && sprite.starts_with('/')
+    {
+        value["sprite"] = serde_json::json!(format!("{base}{sprite}"));
+    }
+
+    if theme == "physical" {
+        if let Some(sources) = value
+            .get_mut("sources")
+            .and_then(|sources| sources.as_object_mut())
+        {
+            for source in sources.values_mut() {
+                if let Some(data) = source.get("data").and_then(|data| data.as_str())
+                    && data.starts_with('/')
+                {
+                    source["data"] = serde_json::json!(format!("{base}{data}"));
+                }
+            }
+        }
+    } else {
+        let map_path = state
+            .cfg
+            .general
+            .data_dir
+            .join("maps")
+            .join(format!("{region}.pmtiles"));
+        if !map_path.exists() {
+            return Err(AppError(anyhow::anyhow!(
+                "harita paketi yok: {}",
+                map_path.display()
+            )));
+        }
+        let (minzoom, maxzoom, bounds) =
+            tokio::task::spawn_blocking(move || -> anyhow::Result<_> {
+                let reader = pmtiles::PmTilesReader::new_with_path(&map_path)?;
+                let header = reader.get_header();
+                Ok((
+                    header.min_zoom,
+                    header.max_zoom,
+                    [
+                        header.min_longitude,
+                        header.min_latitude,
+                        header.max_longitude,
+                        header.max_latitude,
+                    ],
+                ))
+            })
+            .await??;
+        value["sources"] = serde_json::json!({
+            "protomaps": {
+                "type": "vector",
+                "tiles": [format!("{base}/tiles/{region}/{{z}}/{{x}}/{{y}}")],
+                "minzoom": minzoom,
+                "maxzoom": maxzoom,
+                "bounds": bounds,
+                "attribution": "© OpenStreetMap katkıcıları (ODbL) · Protomaps"
+            }
+        });
+    }
     Ok(Json(value))
 }
 
 async fn tilejson(
     State(state): State<AppState>,
     AxumPath(region): AxumPath<String>,
+    headers: HeaderMap,
 ) -> WebResult<Json<serde_json::Value>> {
+    let base = public_base(&headers);
     let path = state
         .cfg
         .general
@@ -621,7 +694,7 @@ async fn tilejson(
         "tilejson": "3.0.0",
         "name": region,
         "scheme": "xyz",
-        "tiles": [format!("/tiles/{region}/{{z}}/{{x}}/{{y}}")],
+        "tiles": [format!("{base}/tiles/{region}/{{z}}/{{x}}/{{y}}")],
         "minzoom": minzoom,
         "maxzoom": maxzoom,
         "bounds": [min_lon, min_lat, max_lon, max_lat],
@@ -824,6 +897,18 @@ fn page(title: &str, query: &str, content: Markup) -> Markup {
     }
 }
 
+fn public_base(headers: &HeaderMap) -> String {
+    let host = headers
+        .get(header::HOST)
+        .and_then(|value| value.to_str().ok())
+        .unwrap_or("127.0.0.1:8787");
+    let scheme = headers
+        .get("x-forwarded-proto")
+        .and_then(|value| value.to_str().ok())
+        .unwrap_or("http");
+    format!("{scheme}://{host}")
+}
+
 fn kind_label(kind: &str) -> &'static str {
     match kind {
         "wiki" => "Vikipedi",
@@ -884,8 +969,10 @@ type WebResult<T> = Result<T, AppError>;
 const MAP_JS: &str = r#"
 const state = { region: QENA_MAP_REGION, theme: 'street-light' };
 const styleUrl = () => state.theme === 'physical'
-  ? '/assets/styles/physical.json'
+  ? '/styles/' + state.region + '/physical'
   : '/styles/' + state.region + '/' + state.theme;
+const status = document.getElementById('map-status');
+
 const map = new maplibregl.Map({
   container: 'map',
   style: styleUrl(),
@@ -893,16 +980,32 @@ const map = new maplibregl.Map({
   zoom: 5,
   attributionControl: false
 });
+map.on('error', (event) => {
+  const message = event && event.error ? event.error.message : String(event);
+  if (status) status.textContent = 'Harita hatası: ' + message;
+});
+map.on('style.load', () => {
+  if (status) status.textContent = 'Stil yüklendi · kaynak bekleniyor…';
+});
+map.on('sourcedata', (event) => {
+  if (status && event.sourceId && event.isSourceLoaded) {
+    status.textContent = 'Kaynak yüklendi · ' + (map.areTilesLoaded() ? 'karolar hazır' : 'karolar yükleniyor…');
+  }
+});
+map.on('idle', () => {
+  if (status) status.textContent = 'Harita hazır · ' + map.getStyle().layers.length + ' katman';
+});
 map.addControl(new maplibregl.NavigationControl(), 'top-right');
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 map.addControl(new maplibregl.AttributionControl({
   customAttribution: '© OpenStreetMap katkıcıları (ODbL) · Protomaps · Natural Earth'
 }), 'bottom-right');
+
 const regionSelect = document.getElementById('region');
 if (regionSelect) {
   regionSelect.addEventListener('change', () => {
     state.region = regionSelect.value;
-    if (state.theme !== 'physical') map.setStyle(styleUrl());
+    map.setStyle(styleUrl());
   });
 }
 document.querySelectorAll('[data-theme]').forEach((button) => {
@@ -1069,6 +1172,20 @@ footer p { margin: .2rem 0; }
   overflow: hidden;
 }
 #map { height: 70vh; min-height: 420px; background: var(--card); }
+.map-status {
+  position: absolute;
+  left: .7rem;
+  top: .7rem;
+  z-index: 2;
+  max-width: min(80%, 520px);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .35rem .55rem;
+  color: var(--muted);
+  font-size: .8rem;
+  pointer-events: none;
+}
 .map-controls {
   display: flex;
   flex-wrap: wrap;

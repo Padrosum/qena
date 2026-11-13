@@ -1,5 +1,6 @@
 [general]
 data_dir = "data"
+assets_dir = "assets"
 host = "127.0.0.1"
 port = 8787
 user_agent = "Qena/0.1 (https://github.com/Padrosum/qena; offline archive)"
