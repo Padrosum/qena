@@ -47,8 +47,9 @@ sayfa açılır; yeni URL kuyruğa girip işlenir.
 
 - [ ] Tam Türkçe Vikipedi ZIM içe aktarma
 - [ ] Kitap rafı ve okuyucu (EPUB/PDF)
-- [ ] `qena export` / `qena import` (.tar.zst + SHA-256)
-- [ ] Statik musl derleme ve kurulum betiği
+- [x] `qena export` / `qena import` (.tar.zst + SHA-256)
+- [x] systemd kullanıcı birimi + `packaging/install.sh`
+- [ ] Statik musl derleme (glibc release derlemesi test edildi)
 - [ ] Yedekleme ve sürüm notları
 
 **Kabul:** temiz bir makinede tek ikili + veri paketiyle arama, okuma ve harita

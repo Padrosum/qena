@@ -201,18 +201,24 @@ qena fetch --queue
 ## 12. Linux ve taşınabilirlik
 
 - `rustls` (OpenSSL yok), `rusqlite` bundled (sistem SQLite yok).
-- Statik musl hedefi: `x86_64-unknown-linux-musl`; tek ikili.
-- `packaging/qena.service`: systemd kullanıcı birimi.
-- `qena doctor`: veri dizini izinleri, dizin bütünlüğü, harita araçları,
-  fontlar ve disk alanını denetler.
-- `qena export/import`: `.tar.zst` paket + SHA-256 manifest; USB'ye kopyalanır.
+- Release ikilisi (glibc) derlendi ve test edildi (~34 MB). Statik musl hedefi
+  `x86_64-unknown-linux-musl`; bu makinede `rustup` bulunmadığı için henüz
+  doğrulanmadı.
+- `packaging/qena.service.in` + `packaging/install.sh`: systemd kullanıcı
+  birimi; ikili `~/.local/bin/qena`, servis `qena.service`.
+- `qena doctor`: veri dizini izinleri, dizin bütünlüğü, `pmtiles` aracı,
+  harita paketleri ve kuyruğu denetler.
+- `qena export/import`: `.tar.zst` paket + SHA-256 manifest; `data/`,
+  `sources/`, `lists/`, `guides/`, `assets/`, `docs/` ve taşınabilir
+  `qena.toml` taşınır; içe aktarmada her dosya doğrulanır.
 
 ## 13. Fazlar
 
 1. **M1 — çekirdek**: katalog, Tantivy, Türkçe arama, axum arayüzü; bir
    Vikipedi listesi + bir Gutenberg kitabı + rehberlerle uçtan uca.
 2. **M2 — harita ve web**: PMTiles bölgeleri, MapLibre, `qena save`, kuyruk.
-3. **M3 — genişleme**: tam Türkçe Vikipedi ZIM, kitap rafı, export/import,
-   systemd, doctor.
+3. **M3 — genişleme**: tam Türkçe Vikipedi ZIM, kitap okuyucu, export/import,
+   systemd, statik musl. Export/import ve systemd tamamlandı; ZIM, okuyucu ve
+   musl açık.
 
 Ayrıntılı kabul ölçütleri `docs/ROADMAP.md` içinde.

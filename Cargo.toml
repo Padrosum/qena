@@ -40,3 +40,6 @@ clap = { version = "4", features = ["derive"] }
 url = "2"
 mime_guess = "2"
 monolith = { version = "2.12", default-features = false }
+tar = "0.4"
+walkdir = "2"
+zstd = "0.13"

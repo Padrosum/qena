@@ -1,0 +1,17 @@
+[Unit]
+Description=Qena — yerel çevrimdışı bilgi sandığı
+Documentation=file://@QENA_DIR@/README.md
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=@QENA_DIR@
+ExecStart=@BIN@ serve
+Restart=on-failure
+RestartSec=3
+# Yalnızca yerel arayüz; dışarıya açma.
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

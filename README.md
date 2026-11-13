@@ -49,6 +49,8 @@ arşiv.
 - `qena serve` → `http://127.0.0.1:8787` arama, okuyucu, kitaplar, rehberler, harita
 - `qena save <url>` → monolith ile tek dosya web kaydı
 - `qena fetch --queue` → web formundan gelen kayıtları işleme
+- `qena export` / `qena import` → `.tar.zst` + SHA-256 doğrulamalı taşınabilir paket
+- `packaging/install.sh` → `~/.local/bin/qena` + systemd kullanıcı servisi
 
 Ayrıntılı mimari `docs/ARCHITECTURE.md`, kaynak listesi `docs/SOURCES.md`,
 yol haritası `docs/ROADMAP.md` içinde.

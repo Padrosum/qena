@@ -7,6 +7,8 @@ use qena_core::{Catalog, Config, Source};
 use qena_fetch::{FetchOptions, fetch_source};
 use tracing_subscriber::EnvFilter;
 
+mod bundle;
+
 #[derive(Debug, Parser)]
 #[command(name = "qena", version, about = "Kötü günler için yerel bilgi sandığı")]
 struct Cli {
@@ -79,6 +81,28 @@ enum Command {
     },
     /// Bir URL'yi web kaydı kuyruğuna ekle
     Save { url: String },
+    /// Arşivi tek pakete dönüştür
+    Export {
+        /// Çıktı .tar.zst yolu
+        output: PathBuf,
+        /// Var olan paketin üzerine yaz
+        #[arg(long)]
+        force: bool,
+        /// Qena ikilisini de pakete ekle
+        #[arg(long)]
+        with_binary: bool,
+    },
+    /// Paketi yeni bir dizine aç ve doğrula
+    Import {
+        /// Paket yolu
+        archive: PathBuf,
+        /// Açılacak dizin
+        #[arg(long, default_value = ".")]
+        into: PathBuf,
+        /// Var olan dosyaların üzerine yaz
+        #[arg(long)]
+        force: bool,
+    },
     /// Kurulumu ve dizini denetle
     Doctor,
     /// Belge, dizin ve kuyruk durumu
@@ -143,6 +167,16 @@ async fn main() -> Result<()> {
             qena_web::serve(cfg, &host, port).await
         }
         Command::Save { url } => save(&cfg, &url).await,
+        Command::Export {
+            output,
+            force,
+            with_binary,
+        } => bundle::export(&cfg, &output, force, with_binary),
+        Command::Import {
+            archive,
+            into,
+            force,
+        } => bundle::import(&archive, &into, force),
         Command::Doctor => doctor(&cfg),
         Command::Status => status(&cfg),
     }
