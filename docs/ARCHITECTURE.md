@@ -108,7 +108,7 @@ yeniden kaydedilirse yeni bir `snapshots` satırı oluşur; eski sürüm silinme
   - `/search?q=&kind=&source=&lang=&page=`
   - `/doc/{id}` belge okuyucu
   - `/raw/{id}` orijinal dosya (HTTP Range destekli)
-  - `/library`, `/library/{id}` kitap rafı
+  - `/library`, `/library/{id}` kitap rafı ve bölümlü EPUB okuyucu
   - `/guides`, `/guides/{slug}` kontrol listeleri
   - `/maps`, `/tiles/{region}/{z}/{x}/{y}`
   - `/save` (GET form, POST kuyruk), `/status`
@@ -123,9 +123,12 @@ yeniden kaydedilirse yeni bir `snapshots` satırı oluşur; eski sürüm silinme
   bazlı `PMTiles` üretimi. Veri OpenStreetMap (ODbL), üretim Protomaps.
 - **Görüntüleme**: MapLibre GL JS (BSD) + yerel font glyph'leri. `qena-web`,
   `pmtiles` Rust kütüphanesiyle PMTiles dosyasını okur ve `/tiles/...` ZXY uç
-  noktası sunar. Türkiye z0-10 ~51 MB; Orta Doğu ve Balkanlar z0-8 ~5–7 MB.
+  noktası sunar. Türkiye z0-14 ~814 MB; Orta Doğu ve Balkanlar z0-8 ~5–7 MB.
   Bölge seçildiğinde stil kaynağı `/styles/{region}/{theme}` üzerinden
   dinamik üretilir.
+- **Stiller**: sokak (açık/koyu), yüksek kontrast/insani (grayscale tabanlı),
+  fiziki/idari. Tam HOT sembolojisi henüz yok; yüksek kontrast afet okuması
+  için ilk sürüm.
 - **Stiller**:
   - `Sokak (açık)` / `Sokak (koyu)`: OSM yolları, su, bina, etiketler.
   - `Fiziki / İdari`: Natural Earth (kamu malı) ülke sınırları, kıyılar,

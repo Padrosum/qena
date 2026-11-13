@@ -29,7 +29,7 @@ Amaç: `qena fetch` → `qena index` → `qena serve` zincirinin uçtan uca
 
 ## M2 — harita ve web kaydı
 
-- [x] `pmtiles extract` ile bölge paketleri (Türkiye z0-10, Orta Doğu ve
+- [x] `pmtiles extract` ile bölge paketleri (Türkiye z0-14, Orta Doğu ve
       Balkanlar z0-8)
 - [x] PMTiles okuma ve `/tiles/...` uç noktası
 - [x] MapLibre + yerel font/stil; sokak (açık/koyu), fiziki/idari
@@ -37,8 +37,9 @@ Amaç: `qena fetch` → `qena index` → `qena serve` zincirinin uçtan uca
 - [x] Natural Earth katmanları
 - [x] `qena save` (monolith): tek dosya HTML
 - [x] Web kuyruğu ve snapshot görüntüleyici
-- [ ] systemd kullanıcı birimi
-- [ ] İnsani (HOT) stil ve daha yüksek zoom (z14) paketleri
+- [x] systemd kullanıcı birimi + `packaging/install.sh`
+- [x] z14 Türkiye paketi ve yüksek kontrast/insani stil
+- [ ] Tam HOT sembolojisi ve daha yüksek zoom (z15+)
 
 **Kabul:** internet kapalıyken harita kaydırılır/yakınlaşır; kaydedilmiş bir
 sayfa açılır; yeni URL kuyruğa girip işlenir.
@@ -46,9 +47,8 @@ sayfa açılır; yeni URL kuyruğa girip işlenir.
 ## M3 — genişleme ve taşınabilirlik
 
 - [ ] Tam Türkçe Vikipedi ZIM içe aktarma
-- [ ] Kitap rafı ve okuyucu (EPUB/PDF)
+- [x] Kitap okuyucu (EPUB bölümleri + içindekiler; PDF indirme)
 - [x] `qena export` / `qena import` (.tar.zst + SHA-256)
-- [x] systemd kullanıcı birimi + `packaging/install.sh`
 - [ ] Statik musl derleme (glibc release derlemesi test edildi)
 - [ ] Yedekleme ve sürüm notları
 

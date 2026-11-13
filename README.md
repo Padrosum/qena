@@ -43,10 +43,10 @@ arşiv.
 - `qena fetch wikipedia-tr-curated` → Vikipedi HTML
 - `qena fetch gutenberg-secili` → Gutenberg EPUB/TXT
 - `qena fetch rehberler` → 10 kontrol listesi
-- `qena fetch protomaps-turkiye` → PMTiles sokak haritası
+- `qena fetch protomaps-turkiye` → PMTiles sokak haritası (z0-14)
 - `qena index` → Tantivy + Türkçe analiz
 - `qena search "deprem çantası"` → sonuçlar
-- `qena serve` → `http://127.0.0.1:8787` arama, okuyucu, kitaplar, rehberler, harita
+- `qena serve` → arama, okuyucu, **bölümlü kitap okuyucu**, rehberler, harita (bölge + yüksek kontrast stil)
 - `qena save <url>` → monolith ile tek dosya web kaydı
 - `qena fetch --queue` → web formundan gelen kayıtları işleme
 - `qena export` / `qena import` → `.tar.zst` + SHA-256 doğrulamalı taşınabilir paket

@@ -13,7 +13,7 @@ use axum::routing::get;
 use maud::{DOCTYPE, Markup, PreEscaped, html};
 use pulldown_cmark::{Options, Parser, html as cmark_html};
 use qena_core::{Catalog, Config};
-use qena_index::{SearchHit, SearchOptions, extract_text, open_index, search};
+use qena_index::{SearchHit, SearchOptions, epub_chapters, extract_text, open_index, search};
 use serde::Deserialize;
 use tokio::net::TcpListener;
 use tower_http::services::ServeDir;
@@ -317,7 +317,102 @@ async fn book_page(
     State(state): State<AppState>,
     AxumPath(id): AxumPath<String>,
 ) -> WebResult<Html<String>> {
-    doc_page(State(state), AxumPath(id)).await
+    let catalog = Catalog::open(&state.cfg.catalog_path())?;
+    let Some(doc) = catalog.document(&id)? else {
+        return Ok(Html(
+            page(
+                "Bulunamadı",
+                "",
+                html! { h1 { "Kitap bulunamadı" } p { (id) } },
+            )
+            .into_string(),
+        ));
+    };
+    let body = book_body(&state.cfg, &doc)?;
+    Ok(Html(page(&doc.title, "", body).into_string()))
+}
+
+fn book_body(cfg: &Config, doc: &qena_core::DocumentRecord) -> anyhow::Result<Markup> {
+    let path = safe_path(cfg, &doc.path)?;
+    let chapters = if doc.mime.contains("epub")
+        || path
+            .extension()
+            .is_some_and(|extension| extension == "epub")
+    {
+        epub_chapters(&path).unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+
+    let (toc, content) = if chapters.is_empty() {
+        let text = extract_text(&path, &doc.mime)
+            .unwrap_or_else(|error| format!("Metin çıkarılamadı: {error:#}"));
+        (
+            html! {},
+            html! {
+                section class="chapter" {
+                    h2 { (doc.title) }
+                    div class="text" { (text) }
+                }
+            },
+        )
+    } else {
+        let toc = html! {
+            nav class="toc" {
+                h2 { "İçindekiler" }
+                ol {
+                    @for (index, chapter) in chapters.iter().enumerate() {
+                        li {
+                            a href=(format!("#bolum-{}", index + 1)) { (chapter.title) }
+                        }
+                    }
+                }
+            }
+        };
+        let content = html! {
+            @for (index, chapter) in chapters.iter().enumerate() {
+                section id=(format!("bolum-{}", index + 1)) class="chapter" {
+                    h2 { (chapter.title) }
+                    div class="text" { (chapter.text) }
+                    p class="chapter-back" {
+                        a href="#top" { "İçindekilere dön" }
+                    }
+                }
+            }
+        };
+        (toc, content)
+    };
+
+    let metadata = doc.metadata();
+    let authors = metadata
+        .get("authors")
+        .and_then(|value| value.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    Ok(html! {
+        article class="doc reader" id="top" {
+            header class="doc-head" {
+                p class="kicker" { "Kitap" }
+                h1 { (doc.title) }
+                @if !authors.is_empty() {
+                    p class="meta" { (authors) }
+                }
+                p class="meta" {
+                    "Dil: " (doc.lang) " · " (chapters.len()) " bölüm · " (doc.license)
+                }
+                p class="meta" { (doc.attribution) }
+                div class="actions" {
+                    a class="button" href=(format!("/raw/{}", doc.id)) { "EPUB/PDF indir" }
+                    @if let Some(url) = &doc.url {
+                        a class="button ghost" href=(url) target="_blank" rel="noreferrer" { "Kaynak bağlantısı" }
+                    }
+                }
+            }
+            (toc)
+            (content)
+        }
+    })
 }
 
 async fn guides(State(state): State<AppState>) -> WebResult<Html<String>> {
@@ -443,6 +538,7 @@ async fn maps_page(
                 }
                 button type="button" data-theme="street-light" { "Sokak (açık)" }
                 button type="button" data-theme="street-dark" { "Sokak (koyu)" }
+                button type="button" data-theme="humanitarian" { "İnsani (yüksek kontrast)" }
                 button type="button" data-theme="physical" { "Fiziki / İdari" }
             }
         }
@@ -474,7 +570,7 @@ async fn maps_page(
 async fn style_json(
     AxumPath((region, theme)): AxumPath<(String, String)>,
 ) -> WebResult<Json<serde_json::Value>> {
-    if !["street-light", "street-dark"].contains(&theme.as_str()) {
+    if !["street-light", "street-dark", "humanitarian"].contains(&theme.as_str()) {
         return Err(AppError(anyhow::anyhow!("bilinmeyen stil: {theme}")));
     }
     let path = std::path::PathBuf::from("assets/styles").join(format!("{theme}.json"));
@@ -652,10 +748,15 @@ fn category_card(title: &str, description: &str, href: &str) -> Markup {
 }
 
 fn result_card(hit: &SearchHit) -> Markup {
+    let href = if hit.kind == "book" {
+        format!("/library/{}", hit.id)
+    } else {
+        format!("/doc/{}", hit.id)
+    };
     html! {
         article class="card" {
             p class="kicker" { (kind_label(&hit.kind)) " · " (hit.lang) }
-            h2 { a href=(format!("/doc/{}", hit.id)) { (hit.title) } }
+            h2 { a href=(href) { (hit.title) } }
             @if !hit.snippet.is_empty() {
                 p class="snippet" { (PreEscaped(hit.snippet.clone())) }
             }
@@ -932,6 +1033,21 @@ h2 { font-size: 1.15rem; margin: 0 0 .4rem; }
 .doc blockquote { border-left: 3px solid var(--line); margin-left: 0; padding-left: 1rem; color: var(--muted); }
 .doc table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; }
 .doc th, .doc td { border: 1px solid var(--line); padding: .4rem .6rem; text-align: left; }
+.toc {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  margin: 1.2rem 0 1.8rem;
+}
+.toc h2 { font-size: 1.05rem; }
+.toc ol { margin: .4rem 0 0; padding-left: 1.4rem; columns: 2; column-gap: 2rem; }
+.toc li { margin: .15rem 0; break-inside: avoid; }
+.chapter { border-top: 1px solid var(--line); margin-top: 1.8rem; padding-top: 1.2rem; }
+.chapter:first-of-type { border-top: 0; }
+.chapter h2 { font-size: 1.35rem; }
+.chapter-back { font-size: .85rem; }
+@media (max-width: 620px) { .toc ol { columns: 1; } }
 .save-form { display: grid; gap: .8rem; max-width: 620px; margin-top: 1.2rem; }
 .save-form label { display: grid; gap: .35rem; font-weight: 600; }
 .big { font-size: 2rem; font-weight: 800; margin: .2rem 0; }

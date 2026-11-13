@@ -64,6 +64,12 @@ pub struct IndexStats {
     pub failed: usize,
 }
 
+#[derive(Debug, Clone)]
+pub struct Chapter {
+    pub title: String,
+    pub text: String,
+}
+
 fn text_options() -> TextOptions {
     TextOptions::default()
         .set_indexing_options(
@@ -250,21 +256,92 @@ fn html_to_text(html: &str) -> Result<String> {
     Ok(text)
 }
 
-fn epub_to_text(path: &Path) -> Result<String> {
+pub fn epub_chapters(path: &Path) -> Result<Vec<Chapter>> {
     let mut doc =
         EpubDoc::new(path).with_context(|| format!("{} EPUB olarak açılamadı", path.display()))?;
+    let mut labels = std::collections::HashMap::new();
+    let mut stack: Vec<&epub::doc::NavPoint> = doc.toc.iter().collect();
+    while let Some(nav) = stack.pop() {
+        if let Some(chapter) = doc.resource_uri_to_chapter(&nav.content) {
+            labels.entry(chapter).or_insert_with(|| nav.label.clone());
+        }
+        stack.extend(nav.children.iter());
+    }
+
     let chapters = doc.get_num_chapters();
-    let mut out = String::new();
+    let mut result = Vec::new();
     for chapter in 0..chapters {
         if !doc.set_current_chapter(chapter) {
             continue;
         }
-        if let Some((html, _mime)) = doc.get_current_str()
-            && let Ok(text) = html_to_text(&html)
-        {
-            out.push_str(&text);
-            out.push_str("\n\n");
+        let Some((html, _mime)) = doc.get_current_str() else {
+            continue;
+        };
+        let text = match html_to_text(&html) {
+            Ok(text) => text,
+            Err(_) => continue,
+        };
+        if text.trim().len() < 20 {
+            continue;
         }
+        let title = labels
+            .get(&chapter)
+            .cloned()
+            .filter(|label| !label.trim().is_empty())
+            .or_else(|| chapter_title(&html))
+            .unwrap_or_else(|| format!("Bölüm {}", chapter + 1));
+        result.push(Chapter { title, text });
+    }
+    Ok(result)
+}
+
+fn chapter_title(html: &str) -> Option<String> {
+    let document = Html::parse_document(html);
+    for candidate in ["h1", "h2"] {
+        if let Ok(selector) = Selector::parse(candidate) {
+            for element in document.select(&selector) {
+                let title = element.text().collect::<String>();
+                let title = clean_title(title);
+                if !title.is_empty() {
+                    return Some(title.chars().take(120).collect());
+                }
+            }
+        }
+    }
+    if let Ok(selector) = Selector::parse("title")
+        && let Some(element) = document.select(&selector).next()
+    {
+        let title = clean_title(element.text().collect::<String>());
+        if !title.is_empty() {
+            return Some(title.chars().take(120).collect());
+        }
+    }
+    None
+}
+
+fn clean_title(title: String) -> String {
+    let title = title.split_whitespace().collect::<Vec<_>>().join(" ");
+    if let Some(position) = title.rfind("CHAPTER ") {
+        let tail = &title[position..];
+        let rest = tail["CHAPTER ".len()..].trim_start();
+        if rest
+            .chars()
+            .next()
+            .is_some_and(|character| character.is_ascii_digit() || "IVXLCDM".contains(character))
+        {
+            return tail.to_string();
+        }
+    }
+    title
+}
+
+fn epub_to_text(path: &Path) -> Result<String> {
+    let mut out = String::new();
+    for chapter in epub_chapters(path)? {
+        out.push_str(&chapter.title);
+        out.push_str("\n\n");
+        out.push_str(&chapter.text);
+        out.push_str("\n\n");
     }
     Ok(out)
 }
