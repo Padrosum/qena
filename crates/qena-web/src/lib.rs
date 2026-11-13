@@ -985,6 +985,8 @@ map.on('error', (event) => {
   if (status) status.textContent = 'Harita hatası: ' + message;
 });
 map.on('style.load', () => {
+  map.resize();
+  map.triggerRepaint();
   if (status) status.textContent = 'Stil yüklendi · kaynak bekleniyor…';
 });
 map.on('sourcedata', (event) => {
@@ -1000,6 +1002,10 @@ map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 map.addControl(new maplibregl.AttributionControl({
   customAttribution: '© OpenStreetMap katkıcıları (ODbL) · Protomaps · Natural Earth'
 }), 'bottom-right');
+setTimeout(() => {
+  map.resize();
+  map.triggerRepaint();
+}, 1000);
 
 const regionSelect = document.getElementById('region');
 if (regionSelect) {
