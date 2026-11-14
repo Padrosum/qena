@@ -21,8 +21,10 @@ taşınabilir bir çevrimdışı arşiv.
 - [Özellikler](#özellikler)
 - [Hızlı başlangıç](#hızlı-başlangıç)
 - [Komutlar](#komutlar)
-- [İlk veri paketi](#i̇lk-veri-paketi)
+- [Hazır paketler](#hazır-paketler)
+- [Kaynak tanımları](#kaynak-tanımları)
 - [Mimari](#mimari)
+- [Depo düzeni](#depo-düzeni)
 - [Arama](#arama)
 - [Haritalar](#haritalar)
 - [Web kaydı](#web-kaydı)
@@ -31,9 +33,11 @@ taşınabilir bir çevrimdışı arşiv.
 - [Lisans ve atıf](#lisans-ve-atıf)
 - [Linux kurulumu](#linux-kurulumu)
 - [Taşıma: export/import](#taşıma-exportimport)
+- [Yedekleme](#yedekleme)
 - [Geliştirme](#geliştirme)
 - [Sorun giderme](#sorun-giderme)
 - [Yol haritası](#yol-haritası)
+- [Sürüm notları](#sürüm-notları)
 - [Gizlilik ve güvenlik](#gizlilik-ve-güvenlik)
 
 ---
@@ -57,16 +61,19 @@ komutlarında kullanılır.
 
 - **Türkçe arama**: Tantivy + Türkçe stemmer + aksan katlama.
   `gida` → “Gıda”, `kitaplar` → “kitap”, `istanbul` → “İstanbul” eşleşir.
+- **Hazır paketler**: `qena package list/show/fetch` ile çekirdek, hızlı
+  başlangıç, kitap, rehber ve harita paketleri.
 - **Vikipedi**: seçili maddeler, isteğe bağlı tam Türkçe Vikipedi ZIM (yol
   haritasında).
 - **Kitaplar**: Project Gutenberg’den EPUB/TXT; bölümlü EPUB okuyucu.
 - **Rehberler**: deprem, su, gıda, ilk yardım, enerji, iletişim, tahliye,
   barınma, hijyen ve belgeler için özgün kontrol listeleri.
-- **Haritalar**: PMTiles + MapLibre; sokak (açık/koyu), insani yüksek kontrast
-  ve Natural Earth fiziki/idari stiller.
+- **Haritalar**: PMTiles + MapLibre; z15 Türkiye, sokak (açık/koyu), insani
+  yüksek kontrast ve Natural Earth fiziki/idari stiller.
 - **Web kaydı**: monolith ile tek dosyalık HTML snapshot; yerel kuyruk.
 - **Taşınabilir paket**: `qena export` / `qena import`; SHA-256 doğrulamalı
   `.tar.zst` arşivi.
+- **Yedekleme**: `scripts/backup.sh` ile zaman damgalı, döngüsel yedek.
 - **Tek ikili**: Rust + axum; Node, Python veya ayrı veritabanı servisi yok.
 - **Yerel**: varsayılan olarak yalnızca `127.0.0.1:8787`.
 
@@ -79,11 +86,11 @@ komutlarında kullanılır.
 - Harita indirmek için `pmtiles` ikilisi
 - Demo paket için ~2 GB, z15 haritalar ve daha fazla kitap için daha fazla disk
 
-`pmtiles` kurulumu (Linux x86_64):
+`pmtiles` kurulumu (Linux x86_64, sabit sürüm):
 
 ```bash
 curl -sSL -o /tmp/pmtiles.tar.gz \
-  https://github.com/protomaps/go-pmtiles/releases/latest/download/go-pmtiles_1.31.2_Linux_x86_64.tar.gz
+  https://github.com/protomaps/go-pmtiles/releases/download/v1.31.2/go-pmtiles_1.31.2_Linux_x86_64.tar.gz
 tar -xzf /tmp/pmtiles.tar.gz -C /tmp
 install -m 755 /tmp/pmtiles ~/.local/bin/pmtiles
 pmtiles version
@@ -105,6 +112,21 @@ cargo build --release
 - `data/catalog.db` SQLite kataloğu
 
 ### İlk içerik
+
+En hızlı yol, hazır bir paket indirmektir:
+
+```bash
+./target/release/qena package list
+./target/release/qena package fetch hizli-baslangic
+./target/release/qena index
+./target/release/qena search "deprem çantası"
+./target/release/qena serve
+```
+
+`hizli-baslangic` yaklaşık 20 MB’dır: 10 Vikipedi maddesi, 3 kitap, 10 rehber
+ve Orta Doğu haritası. Daha büyük paketler için `qena package show cekirdek`.
+
+Tek tek kaynak seçmek isterseniz:
 
 ```bash
 ./target/release/qena source list
@@ -152,7 +174,7 @@ qena search "su" --kind guide --lang tr --limit 5
 qena serve --port 8787 --host 127.0.0.1
 ```
 
-## İlk veri paketi
+## Kaynak tanımları
 
 Depoda hazır gelen kaynak tanımları:
 
@@ -194,27 +216,52 @@ Paket biçimi ve yeni paket ekleme: [`packages/README.md`](packages/README.md).
 ## Mimari
 
 ```
- sources/*.toml
-      │  qena fetch <id>
-      ▼
+ packages/*.toml ── qena package fetch <id>
+        │
+        ▼
+ sources/*.toml ── qena fetch <id>
+        │
+        ▼
  data/content/...  +  data/catalog.db
-      │  qena index
-      ▼
+        │  qena index
+        ▼
  data/index/  (Tantivy)
-      │  qena serve
-      ▼
+        │  qena serve
+        ▼
  http://127.0.0.1:8787
 ```
 
 | Crate | Görev | Ağ |
 |---|---|---|
-| `qena-core` | Yapılandırma, katalog (SQLite), model, lisans | Yok |
+| `qena-core` | Yapılandırma, katalog (SQLite), model, paket, lisans | Yok |
 | `qena-fetch` | Vikipedi, Gutenberg, harita, rehber, web kaydı | Var |
 | `qena-index` | Tantivy şeması, Türkçe analiz, HTML/EPUB/PDF metni | Yok |
 | `qena-web` | axum: arama, okuyucu, harita, rehber, kuyruk | Yalnız yerel |
 | `qena-cli` | `qena` komutu ve alt komutlar | Duruma göre |
 
 Ayrıntılı tasarım: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+## Depo düzeni
+
+```
+qena/
+├─ crates/
+│  ├─ qena-core/     # model, katalog, paketler, yapılandırma
+│  ├─ qena-fetch/    # ağ: Vikipedi, kitap, harita, web kaydı
+│  ├─ qena-index/    # Tantivy, Türkçe analiz, metin çıkarma
+│  ├─ qena-web/      # axum: arama, okuyucu, harita, rehber
+│  └─ qena-cli/      # `qena` komut satırı
+├─ sources/          # kaynak bildirimleri (TOML)
+├─ packages/         # hazır veri paketleri (TOML)
+├─ lists/            # seçili Vikipedi / kitap listeleri
+├─ guides/           # özgün kontrol listeleri
+├─ assets/           # MapLibre, fontlar, stiller, Natural Earth
+├─ packaging/        # systemd, kurulum, musl notları
+├─ scripts/          # yedekleme
+├─ docs/             # mimari, kaynaklar, yol haritası, yedekleme
+├─ CHANGELOG.md
+└─ README.md
+```
 
 ## Arama
 
@@ -360,9 +407,10 @@ cd qena-arsiv
 qena --config qena.toml serve
 ```
 
-Pakette `data/`, `sources/`, `lists/`, `guides/`, `assets/`, `docs/`,
-`packaging/` ve taşınabilir `qena.toml` bulunur. `MANIFEST.json` her dosyanın
-SHA-256’sını taşır; import sırasında doğrulanır.
+Pakette `data/`, `sources/`, `packages/`, `lists/`, `guides/`, `assets/`,
+`docs/`, `packaging/`, `scripts/`, `README.md`, `CHANGELOG.md` ve taşınabilir
+`qena.toml` bulunur. `MANIFEST.json` her dosyanın SHA-256’sını taşır; import
+sırasında doğrulanır.
 
 ## Yedekleme
 
@@ -389,6 +437,8 @@ Kurallar:
 - Veri dosyalarını (`data/`, `*.pmtiles`, `*.zim`) commit etmeyin.
 - Yeni kaynak türü eklerken `qena-fetch` içinde indiriciyi, `sources/README.md`
   içinde belgeyi ve testi birlikte ekleyin.
+- Yeni paket eklerken `packages/*.toml` biçimini ve `packages/README.md`
+  tablosunu güncelleyin.
 - Ağ çağrıları yalnızca `qena-fetch` içinde olmalı; `qena-index` ve `qena-web`
   ağa çıkmamalı.
 - Lisansı ve atıfı olmayan içerik kabul edilmez.
@@ -434,11 +484,18 @@ qena index --rebuild
 - [x] M1 — Tantivy, SQLite, CLI, axum, Vikipedi/Gutenberg/rehberler
 - [x] M2 — PMTiles + MapLibre, z15, web kaydı, kuyruk
 - [x] Export/import, systemd, bölümlü kitap okuyucu
+- [x] Hazır paket CLI (`qena package list/show/fetch`)
+- [x] Yedekleme (`scripts/backup.sh`) ve sürüm notları
 - [ ] Tam Türkçe Vikipedi ZIM içe aktarma
 - [ ] Tam HOT sembolojisi ve z15+ haritalar
 - [ ] Statik musl ikili
 - [ ] EPUB/PDF okuyucu iyileştirmeleri
 - [ ] Daha geniş küratörlü kitap/Vikipedi listeleri
+
+## Sürüm notları
+
+Sürüm geçmişi: [`CHANGELOG.md`](CHANGELOG.md). Son sürüm **0.1.0** (14 Kasım
+2026).
 
 ## Gizlilik ve güvenlik
 

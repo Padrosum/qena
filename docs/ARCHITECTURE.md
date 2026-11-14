@@ -32,6 +32,9 @@ bir bilgi arşivi kurmak.
 ## 3. Veri akışı
 
 ```
+packages/*.toml
+      │  qena package fetch <id>
+      ▼
 sources/*.toml
       │  qena fetch <source> [--limit] [--region]
       ▼
@@ -151,6 +154,12 @@ yeniden kaydedilirse yeni bir `snapshots` satırı oluşur; eski sürüm silinme
 - Varsayılan: alan adı başına gecikme; toplu kazıma yok. WARC çıktısı M3'te.
 
 ## 10. Kaynak bildirimleri
+
+`packages/*.toml` dosyaları, bir veya daha fazla kaynağı isteğe bağlı limitlerle
+birleştiren hazır indirme planlarıdır. `qena package list` bunları listeler,
+`qena package show <id>` ayrıntıyı gösterir, `qena package fetch <id>` kaynakları
+sırayla indirir. Paketler kaynak tanımının yerine geçmez; yalnızca plan düzeyinde
+kalır.
 
 Örnek (`sources/wikipedia-tr-curated.toml`):
 

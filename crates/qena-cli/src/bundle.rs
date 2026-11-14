@@ -36,6 +36,7 @@ pub fn export(cfg: &Config, output: &Path, force: bool, with_binary: bool) -> Re
         "assets",
         "docs",
         "packaging",
+        "scripts",
     ] {
         let source = root.join(name);
         if source.exists() {
@@ -43,7 +44,7 @@ pub fn export(cfg: &Config, output: &Path, force: bool, with_binary: bool) -> Re
             copied_dirs += 1;
         }
     }
-    for name in ["README.md", "LICENSE"] {
+    for name in ["README.md", "CHANGELOG.md", "LICENSE"] {
         let source = root.join(name);
         if source.is_file() {
             fs::copy(&source, staging.join(name))?;
