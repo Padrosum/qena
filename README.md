@@ -568,9 +568,10 @@ Henüz yok. ZIM içe aktarma yol haritasında; şimdilik 62 maddelik seçkili li
 ve genişletilebilir `lists/` dosyaları var.
 
 **Katkı gönderebilir miyim?**
-Repo şimdilik private. Açıldığında `main` dışında bir dal açın, `cargo fmt`,
-`clippy -D warnings` ve `cargo test` çalıştırın; veri dosyalarını commit
-etmeyin.
+Evet. `main` dışında bir dal açın, değişikliği `cargo fmt`,
+`cargo clippy --workspace --all-targets -- -D warnings` ve
+`cargo test --workspace` ile doğrulayın; veri dosyalarını commit etmeyin ve
+pull request açın.
 
 ## Yol haritası
 
