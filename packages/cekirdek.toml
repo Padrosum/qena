@@ -1,0 +1,18 @@
+[package]
+id = "cekirdek"
+title = "Çekirdek arşiv"
+description = "Mevcut tam başlangıç arşivi: 62 Vikipedi maddesi, 20 kitap, 10 rehber ve üç harita bölgesi."
+license = "kaynak bazlı: CC BY-SA 4.0 · kamu malı · ODbL 1.0"
+estimated_size = "~1,7 GB"
+sources = [
+  "wikipedia-tr-curated",
+  "gutenberg-secili",
+  "rehberler",
+  "protomaps-turkiye",
+  "protomaps-orta-dogu",
+  "protomaps-balkanlar",
+]
+
+[package.limits]
+wikipedia-tr-curated = 62
+gutenberg-secili = 20

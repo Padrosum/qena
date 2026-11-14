@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     pub general: General,
     pub sources: Sources,
+    pub packages: Packages,
     pub fetch: Fetch,
     pub search: Search,
 }
@@ -45,6 +46,20 @@ impl Default for Sources {
     fn default() -> Self {
         Self {
             dir: PathBuf::from("sources"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Packages {
+    pub dir: PathBuf,
+}
+
+impl Default for Packages {
+    fn default() -> Self {
+        Self {
+            dir: PathBuf::from("packages"),
         }
     }
 }
@@ -108,6 +123,9 @@ impl Config {
         if self.sources.dir.is_relative() {
             self.sources.dir = base.join(&self.sources.dir);
         }
+        if self.packages.dir.is_relative() {
+            self.packages.dir = base.join(&self.packages.dir);
+        }
     }
 
     pub fn write_default(path: &Path) -> Result<bool> {
@@ -135,6 +153,7 @@ impl Config {
             base.join("licenses"),
             base.join("maps"),
             self.general.assets_dir.clone(),
+            self.packages.dir.clone(),
         ] {
             fs::create_dir_all(&dir)
                 .with_context(|| format!("{} oluşturulamadı", dir.display()))?;

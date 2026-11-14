@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::{Result, bail};
 use clap::{Parser, Subcommand};
 use qena_core::util::now_rfc3339;
-use qena_core::{Catalog, Config, Source};
+use qena_core::{Catalog, Config, Package, Source};
 use qena_fetch::{FetchOptions, fetch_source};
 use tracing_subscriber::EnvFilter;
 
@@ -32,6 +32,11 @@ enum Command {
     Source {
         #[command(subcommand)]
         command: SourceCommand,
+    },
+    /// Hazır veri paketlerini listele/göster/indir
+    Package {
+        #[command(subcommand)]
+        command: PackageCommand,
     },
     /// Açıkça seçilen kaynağı/kategoriyi indir
     Fetch {
@@ -115,6 +120,26 @@ enum SourceCommand {
     List,
 }
 
+#[derive(Debug, Subcommand)]
+enum PackageCommand {
+    /// Hazır paketleri listele
+    List {
+        /// JSON çıktısı
+        #[arg(long)]
+        json: bool,
+    },
+    /// Paket ayrıntılarını göster
+    Show { id: String },
+    /// Paketteki tüm kaynakları indir
+    Fetch {
+        id: String,
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long)]
+        force: bool,
+    },
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
@@ -138,6 +163,13 @@ async fn main() -> Result<()> {
         Command::Init => init(&cli.config, &cfg),
         Command::Source { command } => match command {
             SourceCommand::List => list_sources(&cfg),
+        },
+        Command::Package { command } => match command {
+            PackageCommand::List { json } => list_packages(&cfg, json),
+            PackageCommand::Show { id } => show_package(&cfg, &id),
+            PackageCommand::Fetch { id, dry_run, force } => {
+                fetch_package(&cfg, &id, dry_run, force).await
+            }
         },
         Command::Fetch {
             source,
@@ -227,6 +259,117 @@ fn list_sources(cfg: &Config) -> Result<()> {
             if source.enabled { " *" } else { "" }
         );
     }
+    Ok(())
+}
+
+fn list_packages(cfg: &Config, json: bool) -> Result<()> {
+    let packages = Package::load_all(&cfg.packages.dir)?;
+    if json {
+        println!("{}", serde_json::to_string_pretty(&packages)?);
+        return Ok(());
+    }
+    if packages.is_empty() {
+        println!("Paket yok: {}", cfg.packages.dir.display());
+        return Ok(());
+    }
+    println!("{:<22} {:<12} {:<8} BAŞLIK", "KİMLİK", "BOYUT", "KAYNAK");
+    for package in &packages {
+        println!(
+            "{:<22} {:<12} {:<8} {}",
+            package.id,
+            package.estimated_size,
+            package.sources.len(),
+            package.title
+        );
+    }
+    println!("\nAyrıntı: qena package show <kimlik>");
+    Ok(())
+}
+
+fn show_package(cfg: &Config, id: &str) -> Result<()> {
+    let package = Package::find(&cfg.packages.dir, id)?;
+    println!("{}", package.title);
+    println!("Kimlik: {}", package.id);
+    println!("Boyut: {}", package.estimated_size);
+    println!("Lisans: {}", package.license);
+    println!("Açıklama: {}", package.description);
+    println!("Kaynaklar:");
+    for source_id in &package.sources {
+        let source = Source::find(&cfg.sources.dir, source_id);
+        let limit = package
+            .limit_for(source_id)
+            .map(|limit| format!(" · limit {limit}"))
+            .unwrap_or_default();
+        match source {
+            Ok(source) => println!("  - {source_id} · {}{limit}", source.title),
+            Err(_) => println!("  - {source_id} · (kaynak tanımı yok){limit}"),
+        }
+    }
+    println!("\nİndir: qena package fetch {}", package.id);
+    Ok(())
+}
+
+async fn fetch_package(cfg: &Config, id: &str, dry_run: bool, force: bool) -> Result<()> {
+    let package = Package::find(&cfg.packages.dir, id)?;
+    println!("Paket: {} ({})", package.title, package.id);
+    let mut fetched = 0usize;
+    let mut failed = 0usize;
+    let mut bytes = 0u64;
+
+    for source_id in &package.sources {
+        let source = Source::find(&cfg.sources.dir, source_id)?;
+        let options = FetchOptions {
+            limit: package.limit_for(source_id),
+            dry_run,
+            force,
+        };
+        let started = now_rfc3339();
+        let result = fetch_source(cfg, &source, &options).await;
+        let catalog = Catalog::open(&cfg.catalog_path())?;
+        match result {
+            Ok(summary) => {
+                if !dry_run {
+                    catalog.record_run(
+                        &source.id,
+                        &started,
+                        "ok",
+                        summary.fetched as i64,
+                        summary.bytes as i64,
+                        None,
+                    )?;
+                }
+                fetched += summary.fetched;
+                failed += summary.failed;
+                bytes += summary.bytes;
+                println!(
+                    "{}: {} indirildi, {} atlandı, {} hata, {} bayt",
+                    source.id, summary.fetched, summary.skipped, summary.failed, summary.bytes
+                );
+            }
+            Err(error) => {
+                if !dry_run {
+                    catalog.record_run(
+                        &source.id,
+                        &started,
+                        "error",
+                        0,
+                        0,
+                        Some(&format!("{error:#}")),
+                    )?;
+                }
+                return Err(error);
+            }
+        }
+    }
+
+    println!(
+        "Paket {}: {} indirildi, {} hata, {} bayt{}",
+        package.id,
+        fetched,
+        failed,
+        bytes,
+        if dry_run { " (dry-run)" } else { "" }
+    );
     Ok(())
 }
 
@@ -402,6 +545,8 @@ fn doctor(cfg: &Config) -> Result<()> {
     check(cfg.index_dir().join("meta.json").exists(), "Tantivy dizini");
     let sources = Source::load_all(&cfg.sources.dir)?;
     println!("Kaynak bildirimi: {}", sources.len());
+    let packages = Package::load_all(&cfg.packages.dir)?;
+    println!("Hazır paket: {}", packages.len());
     let pmtiles = std::process::Command::new("pmtiles")
         .arg("version")
         .output()

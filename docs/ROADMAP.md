@@ -51,6 +51,7 @@ sayfa açılır; yeni URL kuyruğa girip işlenir.
 - [x] `qena export` / `qena import` (.tar.zst + SHA-256)
 - [ ] Statik musl derleme (glibc release derlemesi test edildi)
 - [x] Yedekleme ve sürüm notları (`scripts/backup.sh`, `CHANGELOG.md`)
+- [x] `qena package list/show/fetch` hazır veri paketleri
 
 **Kabul:** temiz bir makinede tek ikili + veri paketiyle arama, okuma ve harita
 çalışır; ağ gerekmez.

@@ -28,7 +28,15 @@ pub fn export(cfg: &Config, output: &Path, force: bool, with_binary: bool) -> Re
     fs::create_dir_all(&staging)?;
 
     let mut copied_dirs = 0usize;
-    for name in ["sources", "lists", "guides", "assets", "docs", "packaging"] {
+    for name in [
+        "sources",
+        "packages",
+        "lists",
+        "guides",
+        "assets",
+        "docs",
+        "packaging",
+    ] {
         let source = root.join(name);
         if source.exists() {
             copy_dir(&source, &staging.join(name))?;
@@ -52,6 +60,7 @@ pub fn export(cfg: &Config, output: &Path, force: bool, with_binary: bool) -> Re
     portable.general.data_dir = PathBuf::from("data");
     portable.general.assets_dir = PathBuf::from("assets");
     portable.sources.dir = PathBuf::from("sources");
+    portable.packages.dir = PathBuf::from("packages");
     fs::write(
         staging.join("qena.toml"),
         toml::to_string_pretty(&portable).context("taşınabilir qena.toml üretilemedi")?,

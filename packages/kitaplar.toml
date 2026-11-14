@@ -1,0 +1,10 @@
+[package]
+id = "kitaplar"
+title = "Kamu malı kitaplar"
+description = "Project Gutenberg'ten 20 seçili kitap; EPUB/TXT ve bölümlü okuyucu."
+license = "kamu malı (ABD) · Project Gutenberg"
+estimated_size = "~39 MB"
+sources = ["gutenberg-secili"]
+
+[package.limits]
+gutenberg-secili = 20

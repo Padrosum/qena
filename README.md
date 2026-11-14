@@ -127,6 +127,9 @@ Ardından `http://127.0.0.1:8787` adresini normal bir tarayıcıda açın.
 |---|---|
 | `qena init` | `qena.toml`, veri dizini ve kataloğu hazırlar |
 | `qena source list` | `sources/*.toml` kaynaklarını listeler |
+| `qena package list` | `packages/*.toml` hazır paketlerini listeler |
+| `qena package show <id>` | Paket ayrıntılarını ve kaynaklarını gösterir |
+| `qena package fetch <id>` | Paketteki kaynakları indirir |
 | `qena fetch <id>` | Tek bir kaynağı indirir |
 | `qena fetch --category maps` | Kategorideki tüm kaynakları indirir |
 | `qena fetch --queue` | Web formundan gelen URL kuyruğunu işler |
@@ -164,6 +167,29 @@ Depoda hazır gelen kaynak tanımları:
 
 Bu liste **örnek/başlangıç** paketidir; kendi listelerinizi `lists/` altına
 ekleyip kaynak tanımlarını çoğaltabilirsiniz.
+
+## Hazır paketler
+
+Tek tek kaynak seçmek yerine hazır paketlerden birini indirebilirsiniz:
+
+```bash
+qena package list
+qena package show hizli-baslangic
+qena package fetch hizli-baslangic
+qena package fetch cekirdek
+```
+
+| Paket | İçerik | Boyut |
+|---|---|---|
+| `hizli-baslangic` | 10 Vikipedi, 3 kitap, rehberler, Orta Doğu | ~20 MB |
+| `cekirdek` | 62 Vikipedi, 20 kitap, rehberler, üç harita | ~1,7 GB |
+| `wikipedia-tr` | 62 Vikipedi maddesi | ~11 MB |
+| `kitaplar` | 20 Gutenberg kitabı | ~39 MB |
+| `rehberler` | 10 kontrol listesi | ~20 KB |
+| `haritalar` | Türkiye + Orta Doğu + Balkanlar | ~1,6 GB |
+| `haritalar-anadolu` | Türkiye z15 | ~1,6 GB |
+
+Paket biçimi ve yeni paket ekleme: [`packages/README.md`](packages/README.md).
 
 ## Mimari
 
@@ -260,7 +286,9 @@ veriyi `qena export/import` ile taşıyın.
 
 ## Kaynak ekleme
 
-Her kaynak `sources/<id>.toml` dosyasıdır. Örnek:
+Her kaynak `sources/<id>.toml` dosyasıdır. Hazır paketler `packages/<id>.toml`
+altında, kaynak kimliklerini ve isteğe bağlı limitleri bir araya getirir.
+Örnek:
 
 ```toml
 [source]

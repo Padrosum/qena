@@ -1,0 +1,10 @@
+[package]
+id = "wikipedia-tr"
+title = "Türkçe Vikipedi seçkisi"
+description = "Depodaki 62 maddelik çekirdek Vikipedi listesi; görseller olmadan, çevrimdışı okunur."
+license = "CC BY-SA 4.0"
+estimated_size = "~11 MB"
+sources = ["wikipedia-tr-curated"]
+
+[package.limits]
+wikipedia-tr-curated = 62

@@ -1,0 +1,11 @@
+[package]
+id = "haritalar"
+title = "Harita paketi"
+description = "Anadolu, Orta Doğu ve Balkanlar için çevrimdışı PMTiles; sokak, insani ve fiziki/idari stiller."
+license = "ODbL 1.0 · Natural Earth kamu malı"
+estimated_size = "~1,6 GB"
+sources = [
+  "protomaps-turkiye",
+  "protomaps-orta-dogu",
+  "protomaps-balkanlar",
+]

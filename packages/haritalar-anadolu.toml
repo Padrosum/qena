@@ -1,0 +1,7 @@
+[package]
+id = "haritalar-anadolu"
+title = "Anadolu haritası (z15)"
+description = "Yalnızca Türkiye için yüksek çözünürlüklü PMTiles paketi."
+license = "ODbL 1.0 · Protomaps"
+estimated_size = "~1,6 GB"
+sources = ["protomaps-turkiye"]
