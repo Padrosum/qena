@@ -18,9 +18,11 @@ taşınabilir bir çevrimdışı arşiv.
 ## İçindekiler
 
 - [Nedir?](#nedir)
+- [Hızlı bakış](#hızlı-bakış)
 - [Özellikler](#özellikler)
 - [Hızlı başlangıç](#hızlı-başlangıç)
 - [Komutlar](#komutlar)
+- [Günlük kullanım](#günlük-kullanım)
 - [Hazır paketler](#hazır-paketler)
 - [Kaynak tanımları](#kaynak-tanımları)
 - [Mimari](#mimari)
@@ -36,6 +38,7 @@ taşınabilir bir çevrimdışı arşiv.
 - [Yedekleme](#yedekleme)
 - [Geliştirme](#geliştirme)
 - [Sorun giderme](#sorun-giderme)
+- [Sık sorulanlar](#sık-sorulanlar)
 - [Yol haritası](#yol-haritası)
 - [Sürüm notları](#sürüm-notları)
 - [Gizlilik ve güvenlik](#gizlilik-ve-güvenlik)
@@ -56,6 +59,25 @@ etmektir.
 
 Dizinleyici ve web sunucusu **ağa çıkmaz**. Ağ yalnızca `fetch` ve `save`
 komutlarında kullanılır.
+
+## Hızlı bakış
+
+| Bileşen | Durum |
+|---|---|
+| Arama | Tantivy, Türkçe stemmer + aksan katlama |
+| Vikipedi | 62 maddelik seçkili liste; tam ZIM yol haritasında |
+| Kitaplar | 20 Gutenberg kitabı; bölümlü EPUB okuyucu |
+| Rehberler | 10 özgün afet/hazırlık kontrol listesi |
+| Haritalar | Türkiye z0-15, Orta Doğu/Balkanlar z0-8; 4 stil |
+| Web kaydı | monolith tek dosya HTML + yerel kuyruk |
+| Paketler | 12 hazır paket; kategori ve durum bilgisi |
+| Arayüz | axum, varsayılan `127.0.0.1:8787` |
+| Taşıma | `.tar.zst` export/import + SHA-256 |
+| Linux | systemd kullanıcı servisi, release ikili |
+
+Depodaki veri **örnek/başlangıç** verisidir; kendi arşivinizi `qena fetch`
+veya `qena package fetch` ile oluşturursunuz. Geliştirme arşivi 97 belge ve
+yaklaşık 1,7 GB’dır; bu veri depoya girmez.
 
 ## Özellikler
 
@@ -173,6 +195,34 @@ qena fetch <id> --force        # var olan dosyayı yenile
 qena search "su" --kind guide --lang tr --limit 5
 qena serve --port 8787 --host 127.0.0.1
 ```
+
+## Günlük kullanım
+
+```bash
+# Yerel arayüzü aç
+qena serve
+
+# Paket kur / güncelle
+qena package list --long
+qena package fetch hizli-baslangic
+
+# Yeni içerik eklendiyse dizinle
+qena index
+
+# Terminalden ara
+qena search "su arıtma" --limit 5
+
+# Bir URL'yi arşive kaydet
+qena save https://example.com
+qena fetch --queue
+
+# Yedek al
+./scripts/backup.sh /mnt/yedek/qena
+```
+
+Sunucu varsayılan olarak yalnızca `127.0.0.1` dinler; aynı ağdaki başka bir
+makineden erişmek için `--host 0.0.0.0` kullanmayın. Gerekirse SSH tüneli
+tercih edin.
 
 ## Kaynak tanımları
 
@@ -488,6 +538,39 @@ qena serve --port 8788
 ```bash
 qena index --rebuild
 ```
+
+## Sık sorulanlar
+
+**İnternet olmadan çalışır mı?**
+Evet. `qena serve`, `index` ve `search` ağa çıkmaz; yalnızca `fetch`, `save`
+ve `package fetch` ağ kullanır.
+
+**Veriler nerede tutuluyor?**
+`data/` altında. Bu dizin git’e girmez; yedeklemek için
+`qena export` veya `scripts/backup.sh` kullanın.
+
+**Ne kadar disk gerekir?**
+`hizli-baslangic` ~20 MB, `cekirdek` ~1,7 GB. Haritalar en büyük bileşendir;
+Türkiye z15 tek başına ~1,6 GB.
+
+**Harita neden boş görünüyor?**
+Önce `qena serve` çalışıyor mu kontrol edin ve sayfayı normal bir tarayıcıda
+açın. Sol üstteki durum yazısı hata veriyorsa [Sorun giderme](#sorun-giderme)
+bölümüne bakın.
+
+**Neden Tantivy? GPL değil mi?**
+Tantivy MIT lisanslıdır ve Qena GPL-3.0 ile uyumludur. Hazır, olgun ve GPL
+lisanslı bir Rust arama motoru olmadığı için motor kütüphane olarak kullanıldı;
+Qena’nın kendi kodu GPL-3.0’dır.
+
+**Tam Türkçe Vikipedi var mı?**
+Henüz yok. ZIM içe aktarma yol haritasında; şimdilik 62 maddelik seçkili liste
+ve genişletilebilir `lists/` dosyaları var.
+
+**Katkı gönderebilir miyim?**
+Repo şimdilik private. Açıldığında `main` dışında bir dal açın, `cargo fmt`,
+`clippy -D warnings` ve `cargo test` çalıştırın; veri dosyalarını commit
+etmeyin.
 
 ## Yol haritası
 
