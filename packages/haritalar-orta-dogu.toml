@@ -1,0 +1,9 @@
+[package]
+id = "haritalar-orta-dogu"
+title = "Orta Doğu haritası"
+description = "Suriye, Irak, Lübnan, Ürdün, İsrail-Filistin ve çevresini kapsayan z0-8 PMTiles."
+license = "ODbL 1.0 · Protomaps"
+estimated_size = "~5 MB"
+category = "haritalar"
+tags = ["harita", "orta doğu"]
+sources = ["protomaps-orta-dogu"]

@@ -1,0 +1,12 @@
+[package]
+id = "kitaplar-5"
+title = "Beş klasik kitap"
+description = "Gutenberg listesinden 5 kitaplık küçük raf."
+license = "kamu malı (ABD) · Project Gutenberg"
+estimated_size = "~10 MB"
+category = "kitaplar"
+tags = ["kitap", "klasik"]
+sources = ["gutenberg-secili"]
+
+[package.limits]
+gutenberg-secili = 5

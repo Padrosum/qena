@@ -4,6 +4,7 @@ title = "Hızlı başlangıç"
 description = "Qena'yı denemek için küçük paket: 10 Vikipedi maddesi, 3 kitap, rehberler ve Orta Doğu haritası."
 license = "kaynak bazlı: CC BY-SA 4.0 · kamu malı · ODbL 1.0"
 estimated_size = "~20 MB"
+category = "baslangic"
 sources = [
   "wikipedia-tr-curated",
   "gutenberg-secili",

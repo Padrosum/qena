@@ -1,0 +1,13 @@
+[package]
+id = "minimal"
+title = "Minimal deneme"
+description = "En küçük anlamlı paket: 5 Vikipedi maddesi, 1 kitap ve 10 rehber."
+license = "CC BY-SA 4.0 · kamu malı"
+estimated_size = "~2 MB"
+category = "baslangic"
+tags = ["deneme", "küçük"]
+sources = ["wikipedia-tr-curated", "gutenberg-secili", "rehberler"]
+
+[package.limits]
+wikipedia-tr-curated = 5
+gutenberg-secili = 1

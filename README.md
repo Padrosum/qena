@@ -196,21 +196,31 @@ Tek tek kaynak seçmek yerine hazır paketlerden birini indirebilirsiniz:
 
 ```bash
 qena package list
+qena package list --long
+qena package list --category haritalar
+qena package list --installed
 qena package show hizli-baslangic
 qena package fetch hizli-baslangic
 qena package fetch cekirdek
 ```
 
-| Paket | İçerik | Boyut |
-|---|---|---|
-| `hizli-baslangic` | 10 Vikipedi, 3 kitap, rehberler, Orta Doğu | ~20 MB |
-| `cekirdek` | 62 Vikipedi, 20 kitap, rehberler, üç harita | ~1,7 GB |
-| `wikipedia-tr` | 62 Vikipedi maddesi | ~11 MB |
-| `kitaplar` | 20 Gutenberg kitabı | ~39 MB |
-| `rehberler` | 10 kontrol listesi | ~20 KB |
-| `haritalar` | Türkiye + Orta Doğu + Balkanlar | ~1,6 GB |
-| `haritalar-anadolu` | Türkiye z15 | ~1,6 GB |
+| Paket | Kategori | İçerik | Boyut |
+|---|---|---|---|
+| `minimal` | başlangıç | 5 Vikipedi, 1 kitap, rehberler | ~2 MB |
+| `hizli-baslangic` | başlangıç | 10 Vikipedi, 3 kitap, rehberler, Orta Doğu | ~20 MB |
+| `wikipedia-tr-20` | Vikipedi | 20 Vikipedi maddesi | ~3 MB |
+| `wikipedia-tr` | Vikipedi | 62 Vikipedi maddesi | ~11 MB |
+| `kitaplar-5` | kitaplar | 5 Gutenberg kitabı | ~10 MB |
+| `kitaplar` | kitaplar | 20 Gutenberg kitabı | ~39 MB |
+| `rehberler` | rehberler | 10 kontrol listesi | ~20 KB |
+| `haritalar-orta-dogu` | haritalar | Orta Doğu z0-8 | ~5 MB |
+| `haritalar-balkanlar` | haritalar | Balkanlar z0-8 | ~7 MB |
+| `haritalar-anadolu` | haritalar | Türkiye z15 | ~1,6 GB |
+| `haritalar` | haritalar | Türkiye + Orta Doğu + Balkanlar | ~1,6 GB |
+| `cekirdek` | arşiv | 62 Vikipedi, 20 kitap, rehberler, üç harita | ~1,7 GB |
 
+`list` varsayılan olarak durum (`hazır` / `kısmi` / `yok`) ve kaynak sayısını
+gösterir; `--long` açıklama, lisans, etiket ve kaynakları da ekler.
 Paket biçimi ve yeni paket ekleme: [`packages/README.md`](packages/README.md).
 
 ## Mimari

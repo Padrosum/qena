@@ -4,4 +4,5 @@ title = "Afet ve hazırlık rehberleri"
 description = "Deprem, su, gıda, ilk yardım, enerji, iletişim, tahliye, barınma, hijyen ve belgeler için 10 kontrol listesi."
 license = "CC BY-SA 4.0"
 estimated_size = "~20 KB"
+category = "rehberler"
 sources = ["rehberler"]

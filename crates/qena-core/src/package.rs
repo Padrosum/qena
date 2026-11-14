@@ -17,9 +17,17 @@ pub struct Package {
     pub description: String,
     pub license: String,
     pub estimated_size: String,
+    #[serde(default = "default_category")]
+    pub category: String,
+    #[serde(default)]
+    pub tags: Vec<String>,
     pub sources: Vec<String>,
     #[serde(default)]
     pub limits: HashMap<String, usize>,
+}
+
+fn default_category() -> String {
+    "genel".to_string()
 }
 
 impl Package {
@@ -65,7 +73,7 @@ impl Package {
             }
             packages.push(package);
         }
-        packages.sort_by(|a, b| a.id.cmp(&b.id));
+        packages.sort_by(|a, b| a.category.cmp(&b.category).then_with(|| a.id.cmp(&b.id)));
         Ok(packages)
     }
 

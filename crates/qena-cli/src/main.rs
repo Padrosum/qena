@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use anyhow::{Result, bail};
@@ -127,6 +128,15 @@ enum PackageCommand {
         /// JSON çıktısı
         #[arg(long)]
         json: bool,
+        /// Açıklama, lisans ve kaynak ayrıntılarıyla göster
+        #[arg(long)]
+        long: bool,
+        /// Yalnızca bu kategorideki paketler
+        #[arg(long)]
+        category: Option<String>,
+        /// Yalnızca tüm kaynakları indirilmiş paketler
+        #[arg(long)]
+        installed: bool,
     },
     /// Paket ayrıntılarını göster
     Show { id: String },
@@ -165,7 +175,12 @@ async fn main() -> Result<()> {
             SourceCommand::List => list_sources(&cfg),
         },
         Command::Package { command } => match command {
-            PackageCommand::List { json } => list_packages(&cfg, json),
+            PackageCommand::List {
+                json,
+                long,
+                category,
+                installed,
+            } => list_packages(&cfg, json, long, category.as_deref(), installed),
             PackageCommand::Show { id } => show_package(&cfg, &id),
             PackageCommand::Fetch { id, dry_run, force } => {
                 fetch_package(&cfg, &id, dry_run, force).await
@@ -262,37 +277,124 @@ fn list_sources(cfg: &Config) -> Result<()> {
     Ok(())
 }
 
-fn list_packages(cfg: &Config, json: bool) -> Result<()> {
-    let packages = Package::load_all(&cfg.packages.dir)?;
-    if json {
-        println!("{}", serde_json::to_string_pretty(&packages)?);
-        return Ok(());
+fn list_packages(
+    cfg: &Config,
+    json: bool,
+    long: bool,
+    category: Option<&str>,
+    installed_only: bool,
+) -> Result<()> {
+    let mut packages = Package::load_all(&cfg.packages.dir)?;
+    if let Some(category) = category {
+        packages.retain(|package| package.category == category);
+    }
+    let catalog = Catalog::open(&cfg.catalog_path())?;
+    let counts: HashMap<String, i64> = catalog.source_counts()?.into_iter().collect();
+    if installed_only {
+        packages.retain(|package| package_status(package, &counts) == "hazır");
     }
     if packages.is_empty() {
         println!("Paket yok: {}", cfg.packages.dir.display());
         return Ok(());
     }
-    println!("{:<22} {:<12} {:<8} BAŞLIK", "KİMLİK", "BOYUT", "KAYNAK");
+
+    if json {
+        let views: Vec<PackageView<'_>> = packages
+            .iter()
+            .map(|package| PackageView {
+                package,
+                status: package_status(package, &counts),
+                source_count: package.sources.len(),
+            })
+            .collect();
+        println!("{}", serde_json::to_string_pretty(&views)?);
+        return Ok(());
+    }
+
+    if long {
+        for package in &packages {
+            println!("{}  [{}]", package.title, package.id);
+            println!(
+                "  Kategori: {} · Boyut: {} · Kaynak: {} · Durum: {}",
+                package.category,
+                package.estimated_size,
+                package.sources.len(),
+                package_status(package, &counts)
+            );
+            println!("  Açıklama: {}", package.description);
+            println!("  Lisans: {}", package.license);
+            if !package.tags.is_empty() {
+                println!("  Etiketler: {}", package.tags.join(", "));
+            }
+            println!("  Kaynaklar:");
+            for source_id in &package.sources {
+                let limit = package
+                    .limit_for(source_id)
+                    .map(|limit| format!(" · limit {limit}"))
+                    .unwrap_or_default();
+                println!("    - {source_id}{limit}");
+            }
+            println!();
+        }
+        return Ok(());
+    }
+
+    println!(
+        "{:<20} {:<12} {:<10} {:<7} {:<6} BAŞLIK",
+        "KİMLİK", "KATEGORİ", "BOYUT", "KAYNAK", "DURUM"
+    );
     for package in &packages {
         println!(
-            "{:<22} {:<12} {:<8} {}",
+            "{:<20} {:<12} {:<10} {:<7} {:<6} {}",
             package.id,
+            package.category,
             package.estimated_size,
             package.sources.len(),
+            package_status(package, &counts),
             package.title
         );
     }
-    println!("\nAyrıntı: qena package show <kimlik>");
+    println!("\nAyrıntı: qena package show <kimlik> · Uzun liste: qena package list --long");
     Ok(())
+}
+
+#[derive(serde::Serialize)]
+struct PackageView<'a> {
+    #[serde(flatten)]
+    package: &'a Package,
+    status: &'static str,
+    source_count: usize,
+}
+
+fn package_status(package: &Package, counts: &HashMap<String, i64>) -> &'static str {
+    let present = package
+        .sources
+        .iter()
+        .filter(|source| counts.get(*source).copied().unwrap_or(0) > 0)
+        .count();
+    if present == package.sources.len() {
+        "hazır"
+    } else if present == 0 {
+        "yok"
+    } else {
+        "kısmi"
+    }
 }
 
 fn show_package(cfg: &Config, id: &str) -> Result<()> {
     let package = Package::find(&cfg.packages.dir, id)?;
+    let catalog = Catalog::open(&cfg.catalog_path())?;
+    let counts: HashMap<String, i64> = catalog.source_counts()?.into_iter().collect();
     println!("{}", package.title);
     println!("Kimlik: {}", package.id);
+    println!("Kategori: {}", package.category);
     println!("Boyut: {}", package.estimated_size);
+    println!("Durum: {}", package_status(&package, &counts));
     println!("Lisans: {}", package.license);
     println!("Açıklama: {}", package.description);
+    if !package.tags.is_empty() {
+        println!("Etiketler: {}", package.tags.join(", "));
+    }
     println!("Kaynaklar:");
     for source_id in &package.sources {
         let source = Source::find(&cfg.sources.dir, source_id);

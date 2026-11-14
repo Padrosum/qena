@@ -200,6 +200,15 @@ impl Catalog {
             .context("sayımlar okunamadı")
     }
 
+    pub fn source_counts(&self) -> Result<Vec<(String, i64)>> {
+        let mut statement = self.conn.prepare(
+            "SELECT source_id, COUNT(*) FROM documents GROUP BY source_id ORDER BY source_id",
+        )?;
+        let rows = statement.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?;
+        rows.collect::<rusqlite::Result<Vec<_>>>()
+            .context("kaynak sayımları okunamadı")
+    }
+
     pub fn total(&self) -> Result<i64> {
         self.conn
             .query_row("SELECT COUNT(*) FROM documents", [], |row| row.get(0))

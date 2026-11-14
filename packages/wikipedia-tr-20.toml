@@ -1,0 +1,12 @@
+[package]
+id = "wikipedia-tr-20"
+title = "Türkçe Vikipedi — 20 madde"
+description = "Çekirdek listeden 20 maddelik hızlı Vikipedi seçkisi."
+license = "CC BY-SA 4.0"
+estimated_size = "~3 MB"
+category = "wikipedia"
+tags = ["vikipedi", "hızlı"]
+sources = ["wikipedia-tr-curated"]
+
+[package.limits]
+wikipedia-tr-curated = 20

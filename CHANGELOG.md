@@ -26,7 +26,9 @@
 - `scripts/backup.sh` ve `docs/BACKUP.md`.
 - `qena doctor`, `qena status`.
 - `qena package list/show/fetch`: hazır veri paketleri (çekirdek, hızlı
-  başlangıç, haritalar, kitaplar, rehberler).
+  başlangıç, minimal, haritalar, kitaplar, rehberler).
+  `list`; kategori, boyut, kaynak sayısı ve indirme durumu gösterir;
+  `--long`, `--category`, `--installed` ve `--json` destekler.
 
 ### Düzeltilen
 

@@ -1,0 +1,9 @@
+[package]
+id = "haritalar-balkanlar"
+title = "Balkanlar haritası"
+description = "Yunanistan, Bulgaristan ve çevresini kapsayan z0-8 PMTiles."
+license = "ODbL 1.0 · Protomaps"
+estimated_size = "~7 MB"
+category = "haritalar"
+tags = ["harita", "balkanlar"]
+sources = ["protomaps-balkanlar"]
