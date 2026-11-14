@@ -123,7 +123,7 @@ yeniden kaydedilirse yeni bir `snapshots` satırı oluşur; eski sürüm silinme
   bazlı `PMTiles` üretimi. Veri OpenStreetMap (ODbL), üretim Protomaps.
 - **Görüntüleme**: MapLibre GL JS (BSD) + yerel font glyph'leri. `qena-web`,
   `pmtiles` Rust kütüphanesiyle PMTiles dosyasını okur ve `/tiles/...` ZXY uç
-  noktası sunar. Türkiye z0-14 ~814 MB; Orta Doğu ve Balkanlar z0-8 ~5–7 MB.
+  noktası sunar. Türkiye z0-15 ~1,6 GB; Orta Doğu ve Balkanlar z0-8 ~5–7 MB.
   Bölge seçildiğinde stil kaynağı `/styles/{region}/{theme}` üzerinden
   dinamik üretilir.
 - **Stiller**: sokak (açık/koyu), yüksek kontrast/insani (grayscale tabanlı),

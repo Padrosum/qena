@@ -77,7 +77,7 @@ komutlarında kullanılır.
 - Linux (Arch, Debian/Ubuntu, Fedora…)
 - Rust 1.85+ (`cargo`, `rustc`)
 - Harita indirmek için `pmtiles` ikilisi
-- Demo paket için ~1 GB, z14 haritalar ve daha fazla kitap için daha fazla disk
+- Demo paket için ~2 GB, z15 haritalar ve daha fazla kitap için daha fazla disk
 
 `pmtiles` kurulumu (Linux x86_64):
 
@@ -158,7 +158,7 @@ Depoda hazır gelen kaynak tanımları:
 | `wikipedia-tr-curated` | `wikipedia` | `wikipedia_api` | 62 seçili Türkçe madde |
 | `gutenberg-secili` | `books` | `gutenberg` | 20 kamu malı kitap |
 | `rehberler` | `guides` | `guide_pack` | 10 özgün kontrol listesi |
-| `protomaps-turkiye` | `maps` | `protomaps_region` | Türkiye z0-14 (~814 MB) |
+| `protomaps-turkiye` | `maps` | `protomaps_region` | Türkiye z0-15 (~1,6 GB) |
 | `protomaps-orta-dogu` | `maps` | `protomaps_region` | Orta Doğu z0-8 (~5 MB) |
 | `protomaps-balkanlar` | `maps` | `protomaps_region` | Balkanlar z0-8 (~7 MB) |
 
@@ -211,13 +211,13 @@ qena search "istanbul" --lang tr
 
 Haritalar **PMTiles** olarak saklanır ve **MapLibre GL JS** ile çizilir.
 
-- Türkiye: z0-14, ~814 MB.
+- Türkiye: z0-15, ~1,6 GB.
 - Orta Doğu: z0-8, ~5 MB.
 - Balkanlar: z0-8, ~7 MB.
 - Stiller:
   - Sokak (açık)
   - Sokak (koyu)
-  - İnsani / yüksek kontrast
+  - İnsani / yüksek kontrast (HOT esinli)
   - Fiziki / idari (Natural Earth, kamu malı)
 - Bölge seçici ve stil düğmeleri harita sayfasındadır.
 - Karolar `qena-web` içindeki Rust `pmtiles` kütüphanesiyle okunur; tarayıcıya
@@ -336,6 +336,17 @@ Pakette `data/`, `sources/`, `lists/`, `guides/`, `assets/`, `docs/`,
 `packaging/` ve taşınabilir `qena.toml` bulunur. `MANIFEST.json` her dosyanın
 SHA-256’sını taşır; import sırasında doğrulanır.
 
+## Yedekleme
+
+Otomatik yedek betiği:
+
+```bash
+./scripts/backup.sh /mnt/yedek/qena
+```
+
+Betik `qena export` ile zaman damgalı `.tar.zst` üretir, SHA-256 yazar ve son
+5 paketi tutar. Ayrıntılar: [`docs/BACKUP.md`](docs/BACKUP.md).
+
 ## Geliştirme
 
 ```bash
@@ -393,7 +404,7 @@ qena index --rebuild
 ## Yol haritası
 
 - [x] M1 — Tantivy, SQLite, CLI, axum, Vikipedi/Gutenberg/rehberler
-- [x] M2 — PMTiles + MapLibre, z14, web kaydı, kuyruk
+- [x] M2 — PMTiles + MapLibre, z15, web kaydı, kuyruk
 - [x] Export/import, systemd, bölümlü kitap okuyucu
 - [ ] Tam Türkçe Vikipedi ZIM içe aktarma
 - [ ] Tam HOT sembolojisi ve z15+ haritalar

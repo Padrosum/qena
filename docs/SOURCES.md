@@ -28,7 +28,7 @@ Atıf: "Vikipedi, özgür ansiklopedi — CC BY-SA 4.0" + madde revizyon bağlan
 
 | Bölge | Kaynak | Lisans | Yaklaşık boyut |
 |---|---|---|---|
-| Türkiye | Geofabrik PBF / Protomaps PMTiles | ODbL 1.0 | 0,65 GB PBF; z0-14 PMTiles ~814 MB |
+| Türkiye | Geofabrik PBF / Protomaps PMTiles | ODbL 1.0 | 0,65 GB PBF; z0-15 PMTiles ~1,6 GB |
 | Suriye | Geofabrik | ODbL 1.0 | 83 MB |
 | Irak | Geofabrik | ODbL 1.0 | 92 MB |
 | İran | Geofabrik | ODbL 1.0 | 230 MB |
@@ -63,11 +63,11 @@ ODbL atfı zorunludur. Sokak dışı katmanlar Natural Earth'ten gelir.
 - 62 Vikipedi maddesi (deprem, tsunami, sel, su, gıda, coğrafya, kurumlar…)
 - 20 Gutenberg kitabı (Alice, Pride and Prejudice, Moby Dick, Dracula…)
 - 10 Qena rehberi
-- 3 harita paketi: Türkiye z0-14 (~814 MB), Orta Doğu z0-8 (~5 MB),
+- 3 harita paketi: Türkiye z0-15 (~1,6 GB), Orta Doğu z0-8 (~5 MB),
   Balkanlar z0-8 (~7 MB)
 - 2 web kaydı (example.com, IANA example domains)
 
-Toplam veri dizini ~905 MB. Tam liste `qena status` ile görülür.
+Toplam veri dizini ~1,7 GB. Tam liste `qena status` ile görülür.
 
 ## Lisans uyumluluğu
 

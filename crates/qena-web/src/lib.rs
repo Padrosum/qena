@@ -540,7 +540,7 @@ async fn maps_page(
                 }
                 button type="button" data-theme="street-light" { "Sokak (açık)" }
                 button type="button" data-theme="street-dark" { "Sokak (koyu)" }
-                button type="button" data-theme="humanitarian" { "İnsani (yüksek kontrast)" }
+                button type="button" data-theme="humanitarian" { "İnsani (HOT esinli)" }
                 button type="button" data-theme="physical" { "Fiziki / İdari" }
             }
         }
